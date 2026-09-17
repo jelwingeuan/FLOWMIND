@@ -84,7 +84,7 @@ struct OnboardingView: View {
                         Spacer()
                         Image(systemName: page.icon)
                             .font(.system(size: 62, weight: .medium))
-                            .foregroundStyle(.flowMindAccent)
+                            .foregroundStyle(Color.flowMindAccent)
                             .accessibilityHidden(true)
                         VStack(spacing: 14) {
                             Text(page.title)

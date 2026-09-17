@@ -84,7 +84,7 @@ struct HomeView: View {
 
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        switch hour {
+        return switch hour {
         case 5..<12: "Good morning"
         case 12..<18: "Good afternoon"
         default: "Good evening"

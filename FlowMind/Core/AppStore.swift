@@ -50,7 +50,8 @@ final class FlowMindStore {
     }
 
     func run(flow: FlowSummary, with item: InboxItem) {
-        let descriptor = FetchDescriptor<FlowRecord>(predicate: #Predicate { $0.id == flow.id })
+        let flowID = flow.id
+        let descriptor = FetchDescriptor<FlowRecord>(predicate: #Predicate { $0.id == flowID })
         guard let record = try? modelContext.fetch(descriptor).first else { return }
         record.runCount += 1
         record.successfulRunCount += 1
@@ -61,7 +62,8 @@ final class FlowMindStore {
     }
 
     func archive(item: InboxItem) {
-        let descriptor = FetchDescriptor<InboxItemRecord>(predicate: #Predicate { $0.id == item.id })
+        let itemID = item.id
+        let descriptor = FetchDescriptor<InboxItemRecord>(predicate: #Predicate { $0.id == itemID })
         guard let record = try? modelContext.fetch(descriptor).first else { return }
         record.isArchived = true
         record.updatedAt = Date()
