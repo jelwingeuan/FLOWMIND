@@ -3,11 +3,24 @@ import SwiftUI
 struct HomeView: View {
     @Environment(FlowMindStore.self) private var store
     @State private var showingSettings = false
+    @State private var showingCapture = false
+    @State private var showingInbox = false
+    @State private var showingFlows = false
+
+    private var activeInboxCount: Int {
+        store.inboxItems.filter { !$0.isArchived }.count
+    }
+
+    private var activeFlowCount: Int {
+        store.flows.filter(\.isEnabled).count
+    }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 28) {
+            LazyVStack(alignment: .leading, spacing: 24) {
                 header
+                focusCard
+                quickStats
                 inboxPreview
                 flowsPreview
                 activityPreview
@@ -15,6 +28,7 @@ struct HomeView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 22)
         }
+        .scrollIndicators(.hidden)
         .background(Color.flowMindBackground)
         .navigationTitle("FLOWMIND")
         .toolbar {
@@ -30,38 +44,113 @@ struct HomeView: View {
         .sheet(isPresented: $showingSettings) {
             NavigationStack { SettingsView() }
         }
+        .sheet(isPresented: $showingCapture) {
+            AddInboxItemSheet()
+                .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showingInbox) {
+            NavigationStack { InboxView() }
+        }
+        .sheet(isPresented: $showingFlows) {
+            NavigationStack { FlowsView() }
+        }
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center, spacing: 10) {
+                Text("FLOWMIND")
+                    .font(.caption.weight(.bold))
+                    .tracking(1.4)
+                    .foregroundStyle(Color.flowMindAccent)
+                StatusBadge(title: "On device", color: Color.flowMindSuccess, systemImage: "lock.fill")
+            }
             Text(greeting)
                 .font(.system(.largeTitle, design: .rounded).weight(.bold))
-            Text("Your work, understood at a glance.")
+            Text("A clear view of the work you want to keep moving.")
                 .font(.body)
                 .foregroundStyle(.secondary)
         }
     }
 
-    private var inboxPreview: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader("Smart Inbox", actionTitle: "See all") { }
-            ForEach(store.inboxItems.prefix(3)) { item in
-                NavigationLink {
-                    InboxItemDetailView(item: item)
-                } label: {
-                    InboxRow(item: item)
+    private var focusCard: some View {
+        FlowMindCard(padding: 20, fill: Color.flowMindAccent) {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    Label("YOUR CONTROL CENTER", systemImage: "sparkles")
+                        .font(.caption.weight(.bold))
+                        .tracking(0.8)
+                        .foregroundStyle(Color.white.opacity(0.78))
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Color.white.opacity(0.72))
+                        .accessibilityHidden(true)
                 }
-                .buttonStyle(.plain)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Capture the next thing.")
+                        .font(.system(.title2, design: .rounded).weight(.bold))
+                        .foregroundStyle(.white)
+                    Text("Keep useful context close, then turn repeated work into a Flow when you are ready.")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.white.opacity(0.78))
+                }
+                HStack(spacing: 14) {
+                    Button {
+                        showingCapture = true
+                    } label: {
+                        Label("Quick capture", systemImage: "plus")
+                    }
+                    .buttonStyle(LightButtonStyle())
+                    Text("\(activeInboxCount) items ready")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.white.opacity(0.76))
+                }
+            }
+        }
+    }
+
+    private var quickStats: some View {
+        HStack(spacing: 0) {
+            FlowMindStat(value: "\(activeInboxCount)", label: "Ready to review", systemImage: "tray.full", tint: Color.flowMindAccent)
+            Divider().frame(height: 76)
+            FlowMindStat(value: "\(activeFlowCount)", label: "Active Flows", systemImage: "bolt.fill", tint: Color.flowMindHighlight)
+            Divider().frame(height: 76)
+            FlowMindStat(value: "\(store.activity.count)", label: "Runs logged", systemImage: "checkmark.seal", tint: Color.flowMindSuccess)
+        }
+        .padding(.vertical, 2)
+    }
+
+    private var inboxPreview: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader("Smart Inbox", actionTitle: "See all") {
+                showingInbox = true
+            }
+            FlowMindCard(padding: 16) {
+                VStack(spacing: 0) {
+                    ForEach(Array(store.inboxItems.filter { !$0.isArchived }.prefix(3).enumerated()), id: \.element.id) { index, item in
+                        if index > 0 { Divider().padding(.vertical, 12) }
+                        NavigationLink {
+                            InboxItemDetailView(item: item)
+                        } label: {
+                            InboxRow(item: item)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
         }
     }
 
     private var flowsPreview: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader("Your Flows", actionTitle: "View flows") { }
-            FlowMindCard {
-                VStack(alignment: .leading, spacing: 16) {
-                    ForEach(store.flows.prefix(3)) { flow in
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader("Your Flows", actionTitle: "View flows") {
+                showingFlows = true
+            }
+            FlowMindCard(padding: 16) {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(store.flows.prefix(3).enumerated()), id: \.element.id) { index, flow in
+                        if index > 0 { Divider().padding(.vertical, 12) }
                         FlowSummaryRow(flow: flow)
                     }
                 }
@@ -70,9 +159,9 @@ struct HomeView: View {
     }
 
     private var activityPreview: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             SectionHeader("Recent Activity")
-            FlowMindCard {
+            FlowMindCard(padding: 16) {
                 VStack(alignment: .leading, spacing: 14) {
                     ForEach(store.activity.prefix(3)) { record in
                         ActivityRow(flowName: record.flowName, action: record.action, timestamp: record.timestamp, status: record.status)
@@ -96,13 +185,8 @@ struct InboxRow: View {
     let item: InboxItem
 
     var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(Color.flowMindAccent)
-                .frame(width: 42, height: 42)
-                .background(Color.flowMindAccent.opacity(0.11))
-                .clipShape(.rect(cornerRadius: 13))
+        HStack(spacing: 12) {
+            FlowMindIconTile(systemImage: icon, size: 42)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
@@ -113,12 +197,12 @@ struct InboxRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Spacer()
+            Spacer(minLength: 8)
             Text(item.createdAt.flowMindRelative)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 2)
+        .frame(minHeight: 42)
         .accessibilityElement(children: .combine)
     }
 
@@ -138,12 +222,7 @@ struct FlowSummaryRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: flow.icon)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(Color.flowMindAccent)
-                .frame(width: 34, height: 34)
-                .background(Color.flowMindAccent.opacity(0.1))
-                .clipShape(.rect(cornerRadius: 10))
+            FlowMindIconTile(systemImage: flow.icon, tint: Color.flowMindHighlight, size: 38)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(flow.name).font(.subheadline.weight(.semibold))
@@ -151,12 +230,13 @@ struct FlowSummaryRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Spacer()
+            Spacer(minLength: 8)
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.tertiary)
                 .accessibilityHidden(true)
         }
+        .frame(minHeight: 38)
     }
 }
 
@@ -176,8 +256,9 @@ struct ActivityRow: View {
                 Text("\(action) • \(timestamp.flowMindRelative)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .lineLimit(2)
             }
-            Spacer()
+            Spacer(minLength: 4)
             Text(status)
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(Color.flowMindSuccess)
