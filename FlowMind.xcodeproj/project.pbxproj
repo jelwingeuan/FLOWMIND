@@ -21,6 +21,9 @@
 		B01000000000000000000012 /* MindView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000012 /* MindView.swift */; };
 		B01000000000000000000013 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000013 /* SettingsView.swift */; };
 		B01000000000000000000014 /* FlowMindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000014 /* FlowMindTests.swift */; };
+		B01000000000000000000017 /* UserEducationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000017 /* UserEducationState.swift */; };
+		B01000000000000000000018 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000018 /* OnboardingView.swift */; };
+		B01000000000000000000019 /* GettingStartedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000019 /* GettingStartedView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +51,9 @@
 		F01000000000000000000012 /* MindView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindView.swift; sourceTree = "<group>"; };
 		F01000000000000000000013 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F01000000000000000000014 /* FlowMindTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowMindTests.swift; sourceTree = "<group>"; };
+		F01000000000000000000017 /* UserEducationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserEducationState.swift; sourceTree = "<group>"; };
+		F01000000000000000000018 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		F01000000000000000000019 /* GettingStartedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GettingStartedView.swift; sourceTree = "<group>"; };
 		F01000000000000000000015 /* FlowMind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlowMind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F01000000000000000000016 /* FlowMindTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowMindTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -69,8 +75,8 @@
 		};
 		G01000000000000000000013 /* FlowMind */ = {isa = PBXGroup; children = (G01000000000000000000002 /* App */, G01000000000000000000003 /* Core */, G01000000000000000000004 /* Features */, G01000000000000000000005 /* Shared */); path = FlowMind; sourceTree = "<group>"; };
 		G01000000000000000000002 /* App */ = {isa = PBXGroup; children = (F01000000000000000000001, F01000000000000000000002); path = App; sourceTree = "<group>"; };
-		G01000000000000000000003 /* Core */ = {isa = PBXGroup; children = (F01000000000000000000003, F01000000000000000000004, F01000000000000000000005); path = Core; sourceTree = "<group>"; };
-		G01000000000000000000004 /* Features */ = {isa = PBXGroup; children = (G01000000000000000000007, G01000000000000000000008, G01000000000000000000009, G01000000000000000000010, G01000000000000000000011); path = Features; sourceTree = "<group>"; };
+		G01000000000000000000003 /* Core */ = {isa = PBXGroup; children = (F01000000000000000000003, F01000000000000000000004, F01000000000000000000005, F01000000000000000000017); path = Core; sourceTree = "<group>"; };
+		G01000000000000000000004 /* Features */ = {isa = PBXGroup; children = (G01000000000000000000007, G01000000000000000000008, G01000000000000000000009, G01000000000000000000010, G01000000000000000000011, G01000000000000000000014); path = Features; sourceTree = "<group>"; };
 		G01000000000000000000005 /* Shared */ = {isa = PBXGroup; children = (F01000000000000000000006); path = Shared; sourceTree = "<group>"; };
 		G01000000000000000000006 /* Products */ = {isa = PBXGroup; children = (F01000000000000000000015, F01000000000000000000016); name = Products; sourceTree = "<group>"; };
 		G01000000000000000000007 /* Home */ = {isa = PBXGroup; children = (F01000000000000000000007); path = Home; sourceTree = "<group>"; };
@@ -79,6 +85,7 @@
 		G01000000000000000000010 /* Mind */ = {isa = PBXGroup; children = (F01000000000000000000012); path = Mind; sourceTree = "<group>"; };
 		G01000000000000000000011 /* Settings */ = {isa = PBXGroup; children = (F01000000000000000000013); path = Settings; sourceTree = "<group>"; };
 		G01000000000000000000012 /* Tests */ = {isa = PBXGroup; children = (F01000000000000000000014); path = FlowMindTests; sourceTree = "<group>"; };
+		G01000000000000000000014 /* Onboarding */ = {isa = PBXGroup; children = (F01000000000000000000018, F01000000000000000000019); path = Onboarding; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -132,7 +139,7 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		H01000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B01000000000000000000001, B01000000000000000000002, B01000000000000000000003, B01000000000000000000004, B01000000000000000000005, B01000000000000000000006, B01000000000000000000007, B01000000000000000000008, B01000000000000000000009, B01000000000000000000010, B01000000000000000000011, B01000000000000000000012, B01000000000000000000013); runOnlyForDeploymentPostprocessing = 0; };
+		H01000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B01000000000000000000001, B01000000000000000000002, B01000000000000000000003, B01000000000000000000004, B01000000000000000000005, B01000000000000000000006, B01000000000000000000007, B01000000000000000000008, B01000000000000000000009, B01000000000000000000010, B01000000000000000000011, B01000000000000000000012, B01000000000000000000013, B01000000000000000000017, B01000000000000000000018, B01000000000000000000019); runOnlyForDeploymentPostprocessing = 0; };
 		H01000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B01000000000000000000014); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 

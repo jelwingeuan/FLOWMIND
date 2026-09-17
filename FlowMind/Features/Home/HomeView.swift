@@ -6,6 +6,7 @@ struct HomeView: View {
     @State private var showingCapture = false
     @State private var showingInbox = false
     @State private var showingFlows = false
+    @State private var showingGettingStarted = false
 
     private var activeInboxCount: Int {
         store.inboxItems.filter { !$0.isArchived }.count
@@ -54,6 +55,9 @@ struct HomeView: View {
         .sheet(isPresented: $showingFlows) {
             NavigationStack { FlowsView() }
         }
+        .sheet(isPresented: $showingGettingStarted) {
+            NavigationStack { GettingStartedView() }
+        }
     }
 
     private var header: some View {
@@ -67,7 +71,7 @@ struct HomeView: View {
             }
             Text(greeting)
                 .font(.system(.largeTitle, design: .rounded).weight(.bold))
-            Text("A clear view of the work you want to keep moving.")
+            Text(activeInboxCount == 0 ? "Start with FLOWMIND." : "A clear view of the work you want to keep moving.")
                 .font(.body)
                 .foregroundStyle(.secondary)
         }
@@ -88,10 +92,10 @@ struct HomeView: View {
                         .accessibilityHidden(true)
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Capture the next thing.")
+                    Text(activeInboxCount == 0 ? "Start with FLOWMIND." : "Capture the next thing.")
                         .font(.system(.title2, design: .rounded).weight(.bold))
                         .foregroundStyle(Color.flowMindAccentForeground)
-                    Text("Keep useful context close, then turn repeated work into a Flow when you are ready.")
+                    Text(activeInboxCount == 0 ? "Send something to your Smart Inbox and decide what should happen to it." : "Keep useful context close, then turn repeated work into a Flow when you are ready.")
                         .font(.subheadline)
                         .foregroundStyle(Color.flowMindAccentForeground.opacity(0.78))
                 }
@@ -99,12 +103,20 @@ struct HomeView: View {
                     Button {
                         showingCapture = true
                     } label: {
-                        Label("Quick capture", systemImage: "plus")
+                        Label(activeInboxCount == 0 ? "Add Something" : "Quick capture", systemImage: "plus")
                     }
                     .buttonStyle(LightButtonStyle())
-                    Text("\(activeInboxCount) items ready")
+                    if activeInboxCount == 0 {
+                        Button("How FLOWMIND works") {
+                            showingGettingStarted = true
+                        }
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.76))
+                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.82))
+                    } else {
+                        Text("\(activeInboxCount) items ready")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.flowMindAccentForeground.opacity(0.76))
+                    }
                 }
             }
         }
@@ -129,7 +141,7 @@ struct HomeView: View {
             FlowMindCard(padding: 16) {
                 VStack(spacing: 0) {
                     if activeInboxCount == 0 {
-                        EmptyStateView(icon: "tray", title: "Your Smart Inbox is empty.", detail: "Your saved items will appear here.")
+                        EmptyStateView(icon: "tray", title: "Your Smart Inbox is empty.", detail: "Add a photo, document, link, or text to get started.")
                             .padding(.vertical, 16)
                     }
                     ForEach(Array(store.inboxItems.filter { !$0.isArchived }.prefix(3).enumerated()), id: \.element.id) { index, item in
@@ -154,7 +166,7 @@ struct HomeView: View {
             FlowMindCard(padding: 16) {
                 VStack(alignment: .leading, spacing: 0) {
                     if store.flows.isEmpty {
-                        EmptyStateView(icon: "bolt", title: "No Flows yet.", detail: "Your reusable tasks will appear here.")
+                        EmptyStateView(icon: "bolt", title: "No Flows yet.", detail: "Create your first Flow from something you do repeatedly.")
                             .padding(.vertical, 16)
                     }
                     ForEach(Array(store.flows.prefix(3).enumerated()), id: \.element.id) { index, flow in

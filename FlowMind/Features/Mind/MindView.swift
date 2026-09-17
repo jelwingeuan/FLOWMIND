@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MindView: View {
     @Environment(FlowMindStore.self) private var store
+    @State private var showingHelp = false
 
     var body: some View {
         ScrollView {
@@ -15,9 +16,14 @@ struct MindView: View {
                 SectionHeader("Suggestions")
                 if store.patternSuggestions.isEmpty {
                     FlowMindCard {
-                        EmptyStateView(icon: "lightbulb", title: "FLOWMIND is still learning.", detail: "Patterns will appear as you use the app.")
+                        EmptyStateView(icon: "lightbulb", title: "FLOWMIND is still learning.", detail: "As you repeat actions, possible automations will appear here.")
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 18)
+                        Button("How Mind Works") {
+                            showingHelp = true
+                        }
+                        .buttonStyle(SecondaryButtonStyle())
+                        .frame(maxWidth: .infinity)
                     }
                 } else {
                     ForEach(store.patternSuggestions) { suggestion in
@@ -45,6 +51,9 @@ struct MindView: View {
         }
         .background(Color.flowMindBackground)
         .navigationTitle("Mind")
+        .sheet(isPresented: $showingHelp) {
+            NavigationStack { GettingStartedView() }
+        }
     }
 }
 

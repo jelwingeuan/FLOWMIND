@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(FlowMindStore.self) private var store
+    @Environment(UserEducationState.self) private var education
     @Environment(\.dismiss) private var dismiss
     @AppStorage("appAppearance") private var appAppearanceRawValue = AppAppearance.system.rawValue
     @State private var showingDeleteConfirmation = false
@@ -26,6 +27,15 @@ struct SettingsView: View {
             Section("Processing") {
                 LabeledContent("AI Processing", value: "Mock mode")
                 LabeledContent("Local Data", value: "On device")
+            }
+            Section("Help & About") {
+                NavigationLink("Getting Started") {
+                    GettingStartedView()
+                }
+                Button("Replay Onboarding", systemImage: "arrow.counterclockwise") {
+                    education.replayOnboarding()
+                    dismiss()
+                }
             }
             Section {
                 Button("Delete All Data", role: .destructive) {

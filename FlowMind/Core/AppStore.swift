@@ -38,23 +38,65 @@ final class FlowMindStore {
         let content = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !content.isEmpty else { return false }
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let now = Date()
-        let item = InboxItem(id: UUID(), createdAt: now, updatedAt: now, contentType: .text, title: trimmedTitle.isEmpty ? String(content.prefix(60)) : trimmedTitle, sourceFilename: nil, sourceURL: nil, plainTextContent: content, processingStatus: .ready, detectedCategory: .note, summary: content, extractedFields: ["Source": "Manual entry"], suggestedActions: ["Generate summary", "Add tag", "Archive item"], isArchived: false)
-        modelContext.insert(InboxItemRecord(item: item))
-        return persistAndReload()
+        return addInboxItem(
+            contentType: .text,
+            title: trimmedTitle.isEmpty ? String(content.prefix(60)) : trimmedTitle,
+            plainTextContent: content,
+            category: .note,
+            summary: content,
+            source: "Manual entry"
+        )
     }
 
     @discardableResult
-    func createFlow(from definition: FlowDefinition) -> Bool {
-        let flow = FlowSummary(id: UUID(), name: definition.name, icon: "bolt.fill", trigger: definition.trigger, condition: definition.condition, actionSummary: definition.actions.joined(separator: " -> "), isEnabled: true, runCount: 0, successfulRunCount: 0, lastRunAt: nil, creationSource: "manual")
-        modelContext.insert(FlowRecord(flow: flow))
-        return persistAndReload()
+    func addLinkItem(urlString: String, title: String) -> Bool {
+        let trimmedURLString = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmedURLString), let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme) else {
+            errorMessage = "Enter a valid web link that starts with http:// or https://."
+            return false
+        }
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return addInboxItem(
+            contentType: .url,
+            title: trimmedTitle.isEmpty ? (url.host ?? "Saved link") : trimmedTitle,
+            sourceURL: url.absoluteString,
+            category: .article,
+            summary: "A link you added to your Smart Inbox.",
+            source: "Link"
+        )
     }
 
-    func createFlow(from item: InboxItem) {
+    @discardableResult
+    func addAttachmentItem(data: Data, filename: String, contentType: InboxContentType) -> Bool {
+        guard !data.isEmpty else {
+            errorMessage = "FLOWMIND could not read that item."
+            return false
+        }
+        let category: DetectedCategory = contentType == .pdf ? .document : .unknown
+        let summary = contentType == .image ? "A photo you added to your Smart Inbox." : "A file you added to your Smart Inbox."
+        return addInboxItem(
+            contentType: contentType,
+            title: filename,
+            sourceFilename: filename,
+            attachmentData: data,
+            category: category,
+            summary: summary,
+            source: contentType.label
+        )
+    }
+
+    @discardableResult
+    func createFlow(from definition: FlowDefinition) -> FlowSummary? {
+        let flow = FlowSummary(id: UUID(), name: definition.name, icon: "bolt.fill", trigger: definition.trigger, condition: definition.condition, actionSummary: definition.actions.joined(separator: " -> "), isEnabled: true, runCount: 0, successfulRunCount: 0, lastRunAt: nil, creationSource: "manual")
+        modelContext.insert(FlowRecord(flow: flow))
+        return persistAndReload() ? flow : nil
+    }
+
+    @discardableResult
+    func createFlow(from item: InboxItem) -> FlowSummary? {
         let flow = FlowSummary(id: UUID(), name: item.detectedCategory == .receipt ? "Receipt Capture" : "\(item.detectedCategory.label) Capture", icon: "bolt.fill", trigger: "Something is shared", condition: "It is a \(item.detectedCategory.label.lowercased())", actionSummary: item.suggestedActions.prefix(2).joined(separator: " -> "), isEnabled: true, runCount: 0, successfulRunCount: 0, lastRunAt: nil, creationSource: "suggested")
         modelContext.insert(FlowRecord(flow: flow))
-        persistAndReload()
+        return persistAndReload() ? flow : nil
     }
 
     func run(flow: FlowSummary, with item: InboxItem) {
@@ -114,5 +156,39 @@ final class FlowMindStore {
 
     private func refreshPatterns() {
         patternSuggestions = patternService.suggestions(from: activity, inbox: inboxItems)
+    }
+
+    @discardableResult
+    private func addInboxItem(
+        contentType: InboxContentType,
+        title: String,
+        sourceFilename: String? = nil,
+        sourceURL: String? = nil,
+        plainTextContent: String? = nil,
+        attachmentData: Data? = nil,
+        category: DetectedCategory,
+        summary: String,
+        source: String
+    ) -> Bool {
+        let now = Date()
+        let item = InboxItem(
+            id: UUID(),
+            createdAt: now,
+            updatedAt: now,
+            contentType: contentType,
+            title: title,
+            sourceFilename: sourceFilename,
+            sourceURL: sourceURL,
+            plainTextContent: plainTextContent,
+            attachmentData: attachmentData,
+            processingStatus: .ready,
+            detectedCategory: category,
+            summary: summary,
+            extractedFields: ["Source": source],
+            suggestedActions: ["Generate summary", "Add tag", "Archive item"],
+            isArchived: false
+        )
+        modelContext.insert(InboxItemRecord(item: item))
+        return persistAndReload()
     }
 }

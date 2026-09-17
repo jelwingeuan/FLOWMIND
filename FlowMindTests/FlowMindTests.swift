@@ -40,7 +40,7 @@ final class FlowMindTests: XCTestCase {
             let store = FlowMindStore(modelContext: container.mainContext)
             XCTAssertTrue(store.addTextItem(title: "Restaurant Receipt", text: "My own receipt notes"))
             savedID = store.inboxItems.first?.id
-            XCTAssertTrue(store.createFlow(from: FlowDefinition(name: "Receipt Capture", trigger: "Something is shared", condition: "It is a receipt", actions: ["Save expense"])))
+            XCTAssertNotNil(store.createFlow(from: FlowDefinition(name: "Receipt Capture", trigger: "Something is shared", condition: "It is a receipt", actions: ["Save expense"])))
             store.run(flow: try XCTUnwrap(store.flows.first), with: try XCTUnwrap(store.inboxItems.first))
         }
         let reopenedContainer = try makeContainer(url: url)
@@ -85,12 +85,51 @@ final class FlowMindTests: XCTestCase {
     }
 
     @MainActor
+    func testLinkAndFileCapturePersistOnlyAfterExplicitSave() throws {
+        let container = try makeContainer()
+        let store = FlowMindStore(modelContext: container.mainContext)
+        XCTAssertTrue(store.addLinkItem(urlString: "https://example.com/read", title: "Reading"))
+        XCTAssertTrue(store.addAttachmentItem(data: Data([0x01, 0x02]), filename: "notes.pdf", contentType: .pdf))
+
+        XCTAssertEqual(store.inboxItems.count, 2)
+        let link = try XCTUnwrap(store.inboxItems.first(where: { $0.contentType == .url }))
+        let file = try XCTUnwrap(store.inboxItems.first(where: { $0.contentType == .pdf }))
+        XCTAssertEqual(link.sourceURL, "https://example.com/read")
+        XCTAssertNil(link.attachmentData)
+        XCTAssertEqual(file.sourceFilename, "notes.pdf")
+        XCTAssertEqual(file.attachmentData, Data([0x01, 0x02]))
+    }
+
+    @MainActor
+    func testOnboardingReplayPreservesEducationProgress() {
+        let suiteName = "FlowMindTests.Education.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let education = UserEducationState(defaults: defaults)
+        XCTAssertFalse(education.hasCompletedOnboarding)
+        education.markFirstItemAdded()
+        education.markFirstFlowCreated()
+        education.completeOnboarding()
+
+        let reloaded = UserEducationState(defaults: defaults)
+        XCTAssertTrue(reloaded.hasCompletedOnboarding)
+        XCTAssertTrue(reloaded.hasAddedFirstItem)
+        XCTAssertTrue(reloaded.hasCreatedFirstFlow)
+        reloaded.replayOnboarding()
+        XCTAssertFalse(reloaded.hasCompletedOnboarding)
+        XCTAssertTrue(reloaded.hasAddedFirstItem)
+        XCTAssertTrue(reloaded.hasCreatedFirstFlow)
+    }
+
+    @MainActor
     func testFlowCreationWorksWithoutInboxOrFabricatedHistory() throws {
         let container = try makeContainer()
         let store = FlowMindStore(modelContext: container.mainContext)
         let definition = FlowDefinition(name: "My Flow", trigger: "A note is shared", condition: "It has a deadline", actions: ["Add reminder"])
-        XCTAssertTrue(store.createFlow(from: definition))
+        let createdFlow = try XCTUnwrap(store.createFlow(from: definition))
         let flow = try XCTUnwrap(store.flows.first)
+        XCTAssertEqual(createdFlow.id, flow.id)
         XCTAssertEqual(flow.name, definition.name)
         XCTAssertEqual(flow.trigger, definition.trigger)
         XCTAssertEqual(flow.condition, definition.condition)
@@ -106,17 +145,22 @@ final class FlowMindTests: XCTestCase {
     func testEmptyScreenRenderings() async throws {
         let container = try makeContainer()
         let store = FlowMindStore(modelContext: container.mainContext)
+        let education = UserEducationState(defaults: UserDefaults(suiteName: "FlowMindTests.Render.\(UUID().uuidString)")!)
         for style in [UIUserInterfaceStyle.light, .dark] {
-            try await attachRendering(HomeView(), name: "Home", store: store, style: style, height: 1800)
-            try await attachRendering(InboxView(), name: "Inbox", store: store, style: style)
-            try await attachRendering(FlowsView(), name: "Flows", store: store, style: style)
-            try await attachRendering(MindView(), name: "Mind", store: store, style: style)
+            try await attachRendering(HomeView(), name: "Home", store: store, education: education, style: style, height: 1800)
+            try await attachRendering(InboxView(), name: "Inbox", store: store, education: education, style: style)
+            try await attachRendering(FlowsView(), name: "Flows", store: store, education: education, style: style)
+            try await attachRendering(MindView(), name: "Mind", store: store, education: education, style: style)
+            try await attachRendering(OnboardingView(onFinish: {}), name: "Onboarding", store: store, education: education, style: style)
         }
     }
 
     @MainActor
-    private func attachRendering<Content: View>(_ content: Content, name: String, store: FlowMindStore, style: UIUserInterfaceStyle, height: CGFloat = 812) async throws {
-        let controller = UIHostingController(rootView: NavigationStack { content.environment(store) }.tint(.flowMindAccent))
+    private func attachRendering<Content: View>(_ content: Content, name: String, store: FlowMindStore, education: UserEducationState, style: UIUserInterfaceStyle, height: CGFloat = 812) async throws {
+        let controller = UIHostingController(rootView: NavigationStack { content }
+            .environment(store)
+            .environment(education)
+            .tint(.flowMindAccent))
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
         let window = UIWindow(windowScene: scene)
         window.frame = CGRect(x: 0, y: 0, width: 375, height: height)

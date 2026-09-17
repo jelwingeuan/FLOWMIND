@@ -2,13 +2,20 @@ import SwiftUI
 
 struct InboxItemDetailView: View {
     @Environment(FlowMindStore.self) private var store
+    @Environment(UserEducationState.self) private var education
     let item: InboxItem
+    @State private var firstCreatedFlow: FlowSummary?
     @State private var showingCreatedFlow = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 preview
+                if education.shouldShowFirstItemGuidance && store.inboxItems.count == 1 {
+                    FirstItemGuidanceCard {
+                        education.dismissFirstItemGuidance()
+                    }
+                }
                 VStack(alignment: .leading, spacing: 8) {
                     Text(item.title)
                         .font(.system(.title2, design: .rounded).weight(.bold))
@@ -47,8 +54,14 @@ struct InboxItemDetailView: View {
                     }
                 }
                 Button {
-                    store.createFlow(from: item)
-                    showingCreatedFlow = true
+                    let isFirstFlow = store.flows.isEmpty && !education.hasCreatedFirstFlow
+                    guard let flow = store.createFlow(from: item) else { return }
+                    if isFirstFlow {
+                        education.markFirstFlowCreated()
+                        firstCreatedFlow = flow
+                    } else {
+                        showingCreatedFlow = true
+                    }
                 } label: {
                     Label("Create Flow from these actions", systemImage: "bolt.fill")
                         .frame(maxWidth: .infinity)
@@ -74,6 +87,9 @@ struct InboxItemDetailView: View {
             Button("Done", role: .cancel) { }
         } message: {
             Text("You can find it in the Flows tab and run it on a compatible item.")
+        }
+        .sheet(item: $firstCreatedFlow) { flow in
+            FirstFlowSuccessSheet(flow: flow) { }
         }
     }
 

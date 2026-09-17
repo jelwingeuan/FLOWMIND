@@ -59,12 +59,47 @@ struct InboxItem: Identifiable, Hashable {
     let sourceFilename: String?
     let sourceURL: String?
     let plainTextContent: String?
+    let attachmentData: Data?
     let processingStatus: ProcessingStatus
     let detectedCategory: DetectedCategory
     let summary: String
     let extractedFields: [String: String]
     let suggestedActions: [String]
     let isArchived: Bool
+
+    init(
+        id: UUID,
+        createdAt: Date,
+        updatedAt: Date,
+        contentType: InboxContentType,
+        title: String,
+        sourceFilename: String?,
+        sourceURL: String?,
+        plainTextContent: String?,
+        attachmentData: Data? = nil,
+        processingStatus: ProcessingStatus,
+        detectedCategory: DetectedCategory,
+        summary: String,
+        extractedFields: [String: String],
+        suggestedActions: [String],
+        isArchived: Bool
+    ) {
+        self.id = id
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.contentType = contentType
+        self.title = title
+        self.sourceFilename = sourceFilename
+        self.sourceURL = sourceURL
+        self.plainTextContent = plainTextContent
+        self.attachmentData = attachmentData
+        self.processingStatus = processingStatus
+        self.detectedCategory = detectedCategory
+        self.summary = summary
+        self.extractedFields = extractedFields
+        self.suggestedActions = suggestedActions
+        self.isArchived = isArchived
+    }
 }
 
 struct FlowSummary: Identifiable, Hashable {
@@ -107,6 +142,7 @@ final class InboxItemRecord {
     var sourceFilename: String?
     var sourceURL: String?
     var plainTextContent: String?
+    @Attribute(.externalStorage) var attachmentData: Data?
     var processingStatusRaw: String
     var detectedCategoryRaw: String
     var summary: String
@@ -123,6 +159,7 @@ final class InboxItemRecord {
         sourceFilename = item.sourceFilename
         sourceURL = item.sourceURL
         plainTextContent = item.plainTextContent
+        attachmentData = item.attachmentData
         processingStatusRaw = item.processingStatus.rawValue
         detectedCategoryRaw = item.detectedCategory.rawValue
         summary = item.summary
@@ -141,6 +178,7 @@ final class InboxItemRecord {
             sourceFilename: sourceFilename,
             sourceURL: sourceURL,
             plainTextContent: plainTextContent,
+            attachmentData: attachmentData,
             processingStatus: ProcessingStatus(rawValue: processingStatusRaw) ?? .ready,
             detectedCategory: DetectedCategory(rawValue: detectedCategoryRaw) ?? .unknown,
             summary: summary,

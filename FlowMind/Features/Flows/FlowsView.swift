@@ -3,18 +3,24 @@ import SwiftUI
 struct FlowsView: View {
     @Environment(FlowMindStore.self) private var store
     @State private var showingBuilder = false
+    @State private var showingHelp = false
 
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 14) {
                 if store.flows.isEmpty {
-                    EmptyStateView(icon: "bolt", title: "No Flows yet.", detail: "Teach FLOWMIND something you do repeatedly.")
+                    EmptyStateView(icon: "bolt", title: "No Flows yet.", detail: "Flows are reusable actions you teach FLOWMIND.")
                         .frame(maxWidth: .infinity)
                         .padding(.top, 80)
-                    Button("Create a Flow", systemImage: "plus") {
+                    Button("Create Your First Flow", systemImage: "plus") {
                         showingBuilder = true
                     }
                     .buttonStyle(SecondaryButtonStyle())
+                    .frame(maxWidth: .infinity)
+                    Button("Learn About Flows") {
+                        showingHelp = true
+                    }
+                    .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity)
                 } else {
                     ForEach(store.flows) { flow in
@@ -27,6 +33,14 @@ struct FlowsView: View {
         .background(Color.flowMindBackground)
         .navigationTitle("Flows")
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    showingHelp = true
+                } label: {
+                    Image(systemName: "info.circle")
+                }
+                .accessibilityLabel("Learn about Flows")
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showingBuilder = true
@@ -38,6 +52,9 @@ struct FlowsView: View {
         }
         .sheet(isPresented: $showingBuilder) {
             FlowBuilderView()
+        }
+        .sheet(isPresented: $showingHelp) {
+            NavigationStack { GettingStartedView() }
         }
     }
 }

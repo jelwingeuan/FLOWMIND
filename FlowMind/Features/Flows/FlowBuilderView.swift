@@ -2,11 +2,13 @@ import SwiftUI
 
 struct FlowBuilderView: View {
     @Environment(FlowMindStore.self) private var store
+    @Environment(UserEducationState.self) private var education
     @Environment(\.dismiss) private var dismiss
     @State private var prompt = ""
     @State private var definition: FlowDefinition?
     @State private var isGenerating = false
     @State private var showingSaveError = false
+    @State private var firstCreatedFlow: FlowSummary?
 
     private let generationService = MockFlowGenerationService()
 
@@ -36,8 +38,14 @@ struct FlowBuilderView: View {
                     .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGenerating)
                     if let definition {
                         GeneratedFlowPreview(definition: definition) {
-                            if store.createFlow(from: definition) {
-                                dismiss()
+                            let isFirstFlow = store.flows.isEmpty && !education.hasCreatedFirstFlow
+                            if let flow = store.createFlow(from: definition) {
+                                if isFirstFlow {
+                                    education.markFirstFlowCreated()
+                                    firstCreatedFlow = flow
+                                } else {
+                                    dismiss()
+                                }
                             } else {
                                 showingSaveError = true
                             }
@@ -53,6 +61,11 @@ struct FlowBuilderView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(store.errorMessage ?? "Please try again.")
+            }
+            .sheet(item: $firstCreatedFlow) { flow in
+                FirstFlowSuccessSheet(flow: flow) {
+                    dismiss()
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
