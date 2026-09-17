@@ -33,7 +33,7 @@ struct MindView: View {
                             Text("Learning from explicit activity")
                                 .font(.subheadline.weight(.semibold))
                             Spacer()
-                            StatusBadge(title: "Active", color: .flowMindSuccess)
+                            StatusBadge(title: store.inboxItems.isEmpty ? "Waiting" : "Active", color: store.inboxItems.isEmpty ? .secondary : .flowMindSuccess)
                         }
                         Text("FLOWMIND uses a simple, visible heuristic in V1: repeated categories and action sequences become suggestions after three occurrences.")
                             .font(.footnote)

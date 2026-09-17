@@ -46,7 +46,7 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showingCapture) {
             AddInboxItemSheet()
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
         }
         .sheet(isPresented: $showingInbox) {
             NavigationStack { InboxView() }
@@ -74,7 +74,7 @@ struct HomeView: View {
     }
 
     private var focusCard: some View {
-        FlowMindCard(padding: 20, fill: Color.flowMindAccent) {
+        FlowMindCard(padding: 20, fill: Color.flowMindAccentFill) {
             VStack(alignment: .leading, spacing: 18) {
                 HStack {
                     Label("YOUR CONTROL CENTER", systemImage: "sparkles")
@@ -128,6 +128,10 @@ struct HomeView: View {
             }
             FlowMindCard(padding: 16) {
                 VStack(spacing: 0) {
+                    if activeInboxCount == 0 {
+                        EmptyStateView(icon: "tray", title: "Your Smart Inbox is empty.", detail: "Your saved items will appear here.")
+                            .padding(.vertical, 16)
+                    }
                     ForEach(Array(store.inboxItems.filter { !$0.isArchived }.prefix(3).enumerated()), id: \.element.id) { index, item in
                         if index > 0 { Divider().padding(.vertical, 12) }
                         NavigationLink {
@@ -149,6 +153,10 @@ struct HomeView: View {
             }
             FlowMindCard(padding: 16) {
                 VStack(alignment: .leading, spacing: 0) {
+                    if store.flows.isEmpty {
+                        EmptyStateView(icon: "bolt", title: "No Flows yet.", detail: "Your reusable tasks will appear here.")
+                            .padding(.vertical, 16)
+                    }
                     ForEach(Array(store.flows.prefix(3).enumerated()), id: \.element.id) { index, flow in
                         if index > 0 { Divider().padding(.vertical, 12) }
                         FlowSummaryRow(flow: flow)
@@ -163,6 +171,10 @@ struct HomeView: View {
             SectionHeader("Recent Activity")
             FlowMindCard(padding: 16) {
                 VStack(alignment: .leading, spacing: 14) {
+                    if store.activity.isEmpty {
+                        EmptyStateView(icon: "clock", title: "No activity yet.", detail: "Your Flow runs will appear here.")
+                            .padding(.vertical, 16)
+                    }
                     ForEach(store.activity.prefix(3)) { record in
                         ActivityRow(flowName: record.flowName, action: record.action, timestamp: record.timestamp, status: record.status)
                     }

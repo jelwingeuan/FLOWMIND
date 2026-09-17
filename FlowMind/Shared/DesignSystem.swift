@@ -1,7 +1,12 @@
 import SwiftUI
 
 extension Color {
-    static let flowMindAccent = Color(red: 0.08, green: 0.34, blue: 0.39)
+    static let flowMindAccent = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.43, green: 0.78, blue: 0.81, alpha: 1)
+            : UIColor(red: 0.08, green: 0.34, blue: 0.39, alpha: 1)
+    })
+    static let flowMindAccentFill = Color(red: 0.08, green: 0.34, blue: 0.39)
     static let flowMindAccentSoft = Color(red: 0.80, green: 0.91, blue: 0.89)
     static let flowMindHighlight = Color(red: 0.93, green: 0.51, blue: 0.20)
     static let flowMindPrimaryBackground = Color(uiColor: .systemBackground)
@@ -115,7 +120,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(Color.flowMindAccentForeground)
             .frame(minHeight: 52)
             .padding(.horizontal, 18)
-            .background(Color.flowMindAccent.opacity(configuration.isPressed ? 0.78 : 1))
+            .background(Color.flowMindAccentFill.opacity(configuration.isPressed ? 0.78 : 1))
             .clipShape(.rect(cornerRadius: 16))
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
@@ -138,7 +143,7 @@ struct LightButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.subheadline.weight(.bold))
-            .foregroundStyle(Color.flowMindAccent)
+            .foregroundStyle(Color.flowMindAccentFill)
             .frame(minHeight: 46)
             .padding(.horizontal, 15)
             .background(Color.flowMindAccentForeground.opacity(configuration.isPressed ? 0.78 : 1))

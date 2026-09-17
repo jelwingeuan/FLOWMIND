@@ -6,6 +6,7 @@ struct FlowBuilderView: View {
     @State private var prompt = ""
     @State private var definition: FlowDefinition?
     @State private var isGenerating = false
+    @State private var showingSaveError = false
 
     private let generationService = MockFlowGenerationService()
 
@@ -35,10 +36,11 @@ struct FlowBuilderView: View {
                     .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGenerating)
                     if let definition {
                         GeneratedFlowPreview(definition: definition) {
-                            let item = store.inboxItems.first(where: { $0.detectedCategory == .receipt }) ?? store.inboxItems.first
-                            guard let item else { return }
-                            store.createFlow(from: item)
-                            dismiss()
+                            if store.createFlow(from: definition) {
+                                dismiss()
+                            } else {
+                                showingSaveError = true
+                            }
                         }
                     }
                 }
@@ -47,6 +49,11 @@ struct FlowBuilderView: View {
             .background(Color.flowMindBackground)
             .navigationTitle("New Flow")
             .navigationBarTitleDisplayMode(.inline)
+            .alert("Flow could not be saved", isPresented: $showingSaveError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(store.errorMessage ?? "Please try again.")
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") { dismiss() }

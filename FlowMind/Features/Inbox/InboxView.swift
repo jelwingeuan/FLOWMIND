@@ -17,9 +17,16 @@ struct InboxView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 12) {
                 if visibleItems.isEmpty {
-                    EmptyStateView(icon: "tray", title: "Your Smart Inbox is empty.", detail: "Share a screenshot, document, link, or note to FLOWMIND.")
+                    EmptyStateView(icon: searchText.isEmpty ? "tray" : "magnifyingglass", title: searchText.isEmpty ? "Your Smart Inbox is empty." : "No matching items.", detail: searchText.isEmpty ? "Your saved notes will appear here." : "Try a different search.")
                         .frame(maxWidth: .infinity)
                         .padding(.top, 80)
+                    if searchText.isEmpty {
+                        Button("Create a note", systemImage: "square.and.pencil") {
+                            showingAddItem = true
+                        }
+                        .buttonStyle(SecondaryButtonStyle())
+                        .frame(maxWidth: .infinity)
+                    }
                 } else {
                     ForEach(visibleItems) { item in
                         NavigationLink {
@@ -48,7 +55,7 @@ struct InboxView: View {
         }
         .sheet(isPresented: $showingAddItem) {
             AddInboxItemSheet()
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
         }
     }
 }
@@ -56,28 +63,44 @@ struct InboxView: View {
 struct AddInboxItemSheet: View {
     @Environment(FlowMindStore.self) private var store
     @Environment(\.dismiss) private var dismiss
+    @State private var title = ""
+    @State private var text = ""
+    @State private var showingSaveError = false
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Capture something you want FLOWMIND to remember.")
-                    .font(.title3.weight(.semibold))
-                Button {
-                    store.addTextItem()
-                    dismiss()
-                } label: {
-                    Label("Create a quick note", systemImage: "square.and.pencil")
-                        .frame(maxWidth: .infinity)
+            Form {
+                Section("Title") {
+                    TextField("Title (optional)", text: $title)
                 }
-                .buttonStyle(PrimaryButtonStyle())
-                Text("Share Extension, Photos, Files, URLs, and App Intents will connect to this same inbox as the V1 integrations land.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                Spacer()
+                Section("Note") {
+                    TextEditor(text: $text)
+                        .frame(minHeight: 180)
+                        .accessibilityLabel("Note content")
+                }
             }
-            .padding(24)
-            .navigationTitle("New item")
+            .navigationTitle("New note")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", role: .cancel) { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save", systemImage: "checkmark") {
+                        if store.addTextItem(title: title, text: text) {
+                            dismiss()
+                        } else {
+                            showingSaveError = true
+                        }
+                    }
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .alert("Note could not be saved", isPresented: $showingSaveError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(store.errorMessage ?? "Please try again.")
+            }
         }
     }
 }
@@ -102,5 +125,7 @@ struct EmptyStateView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
         }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 }

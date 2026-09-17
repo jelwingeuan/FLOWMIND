@@ -11,6 +11,11 @@ struct FlowsView: View {
                     EmptyStateView(icon: "bolt", title: "No Flows yet.", detail: "Teach FLOWMIND something you do repeatedly.")
                         .frame(maxWidth: .infinity)
                         .padding(.top, 80)
+                    Button("Create a Flow", systemImage: "plus") {
+                        showingBuilder = true
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .frame(maxWidth: .infinity)
                 } else {
                     ForEach(store.flows) { flow in
                         FlowCard(flow: flow)
@@ -120,10 +125,15 @@ struct RunFlowSheet: View {
         NavigationStack {
             Form {
                 Section("Input") {
-                    Picker("Inbox item", selection: $selectedItemID) {
-                        Text("Choose an item").tag(UUID?.none)
-                        ForEach(store.inboxItems) { item in
-                            Text(item.title).tag(UUID?.some(item.id))
+                    if store.inboxItems.isEmpty {
+                        EmptyStateView(icon: "tray", title: "Your Smart Inbox is empty.", detail: "A saved item is needed for this Flow.")
+                            .padding(.vertical, 16)
+                    } else {
+                        Picker("Inbox item", selection: $selectedItemID) {
+                            Text("Choose an item").tag(UUID?.none)
+                            ForEach(store.inboxItems) { item in
+                                Text(item.title).tag(UUID?.some(item.id))
+                            }
                         }
                     }
                 }
