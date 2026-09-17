@@ -1,0 +1,161 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B01000000000000000000001 /* FlowMindApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000001 /* FlowMindApp.swift */; };
+		B01000000000000000000002 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000002 /* RootView.swift */; };
+		B01000000000000000000003 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000003 /* Models.swift */; };
+		B01000000000000000000004 /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000004 /* Services.swift */; };
+		B01000000000000000000005 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000005 /* AppStore.swift */; };
+		B01000000000000000000006 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000006 /* DesignSystem.swift */; };
+		B01000000000000000000007 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000007 /* HomeView.swift */; };
+		B01000000000000000000008 /* InboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000008 /* InboxView.swift */; };
+		B01000000000000000000009 /* InboxItemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000009 /* InboxItemDetailView.swift */; };
+		B01000000000000000000010 /* FlowsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000010 /* FlowsView.swift */; };
+		B01000000000000000000011 /* FlowBuilderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000011 /* FlowBuilderView.swift */; };
+		B01000000000000000000012 /* MindView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000012 /* MindView.swift */; };
+		B01000000000000000000013 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000013 /* SettingsView.swift */; };
+		B01000000000000000000014 /* FlowMindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01000000000000000000014 /* FlowMindTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		P01000000000000000000001 = {
+			isa = PBXContainerItemProxy;
+			containerPortal = P01000000000000000000002;
+			proxyType = 1;
+			remoteGlobalIDString = T01000000000000000000002;
+			remoteInfo = FlowMind;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F01000000000000000000001 /* FlowMindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowMindApp.swift; sourceTree = "<group>"; };
+		F01000000000000000000002 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		F01000000000000000000003 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		F01000000000000000000004 /* Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
+		F01000000000000000000005 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
+		F01000000000000000000006 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		F01000000000000000000007 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		F01000000000000000000008 /* InboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboxView.swift; sourceTree = "<group>"; };
+		F01000000000000000000009 /* InboxItemDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboxItemDetailView.swift; sourceTree = "<group>"; };
+		F01000000000000000000010 /* FlowsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowsView.swift; sourceTree = "<group>"; };
+		F01000000000000000000011 /* FlowBuilderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowBuilderView.swift; sourceTree = "<group>"; };
+		F01000000000000000000012 /* MindView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindView.swift; sourceTree = "<group>"; };
+		F01000000000000000000013 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F01000000000000000000014 /* FlowMindTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowMindTests.swift; sourceTree = "<group>"; };
+		F01000000000000000000015 /* FlowMind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlowMind.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F01000000000000000000016 /* FlowMindTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowMindTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		H01000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		H01000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		G01000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				G01000000000000000000002 /* App */,
+				G01000000000000000000003 /* Core */,
+				G01000000000000000000004 /* Features */,
+				G01000000000000000000005 /* Shared */,
+				G01000000000000000000012 /* Tests */,
+				G01000000000000000000006 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		G01000000000000000000002 /* App */ = {isa = PBXGroup; children = (F01000000000000000000001, F01000000000000000000002); path = App; sourceTree = "<group>"; };
+		G01000000000000000000003 /* Core */ = {isa = PBXGroup; children = (F01000000000000000000003, F01000000000000000000004, F01000000000000000000005); path = Core; sourceTree = "<group>"; };
+		G01000000000000000000004 /* Features */ = {isa = PBXGroup; children = (G01000000000000000000007, G01000000000000000000008, G01000000000000000000009, G01000000000000000000010, G01000000000000000000011); path = Features; sourceTree = "<group>"; };
+		G01000000000000000000005 /* Shared */ = {isa = PBXGroup; children = (F01000000000000000000006); path = Shared; sourceTree = "<group>"; };
+		G01000000000000000000006 /* Products */ = {isa = PBXGroup; children = (F01000000000000000000015, F01000000000000000000016); name = Products; sourceTree = "<group>"; };
+		G01000000000000000000007 /* Home */ = {isa = PBXGroup; children = (F01000000000000000000007); path = Home; sourceTree = "<group>"; };
+		G01000000000000000000008 /* Inbox */ = {isa = PBXGroup; children = (F01000000000000000000008, F01000000000000000000009); path = Inbox; sourceTree = "<group>"; };
+		G01000000000000000000009 /* Flows */ = {isa = PBXGroup; children = (F01000000000000000000010, F01000000000000000000011); path = Flows; sourceTree = "<group>"; };
+		G01000000000000000000010 /* Mind */ = {isa = PBXGroup; children = (F01000000000000000000012); path = Mind; sourceTree = "<group>"; };
+		G01000000000000000000011 /* Settings */ = {isa = PBXGroup; children = (F01000000000000000000013); path = Settings; sourceTree = "<group>"; };
+		G01000000000000000000012 /* Tests */ = {isa = PBXGroup; children = (F01000000000000000000014); path = FlowMindTests; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		T01000000000000000000001 /* FlowMind */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01000000000000000000001;
+			buildPhases = (H01000000000000000000003, H01000000000000000000001, H01000000000000000000004);
+			buildRules = ();
+			dependencies = ();
+			name = FlowMind;
+			productName = FlowMind;
+			productReference = F01000000000000000000015;
+			productType = "com.apple.product-type.application";
+		};
+		T01000000000000000000002 /* FlowMindTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01000000000000000000002;
+			buildPhases = (H01000000000000000000005, H01000000000000000000002, H01000000000000000000006);
+			buildRules = ();
+			dependencies = (D01000000000000000000001);
+			name = FlowMindTests;
+			productName = FlowMindTests;
+			productReference = F01000000000000000000016;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		P01000000000000000000002 /* Project object */ = {
+			isa = PBXProject;
+			attributes = { LastSwiftUpdateCheck = 2630; ORGANIZATIONNAME = FLOWMIND; TargetAttributes = { T01000000000000000000001 = { CreatedOnToolsVersion = 26.3; }; T01000000000000000000002 = { CreatedOnToolsVersion = 26.3; TestTargetID = T01000000000000000000001; }; }; };
+			buildConfigurationList = C01000000000000000000003;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base);
+			mainGroup = G01000000000000000000001;
+			productRefGroup = G01000000000000000000006;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (T01000000000000000000001, T01000000000000000000002);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		H01000000000000000000004 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		H01000000000000000000006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		H01000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B01000000000000000000001, B01000000000000000000002, B01000000000000000000003, B01000000000000000000004, B01000000000000000000005, B01000000000000000000006, B01000000000000000000007, B01000000000000000000008, B01000000000000000000009, B01000000000000000000010, B01000000000000000000011, B01000000000000000000012, B01000000000000000000013); runOnlyForDeploymentPostprocessing = 0; };
+		H01000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B01000000000000000000014); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D01000000000000000000001 = {isa = PBXTargetDependency; target = T01000000000000000000001; targetProxy = P01000000000000000000001; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		X01000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ANALYZER_NONNULL = YES; CLANG_CXX_LANGUAGE_STANDARD = "gnu++20"; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_WARN_UNDECLARED_SELECTOR = YES; GCC_WARN_UNINITIALIZED_AUTOS = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 6.0; }; name = Debug; };
+		X01000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ANALYZER_NONNULL = YES; CLANG_CXX_LANGUAGE_STANDARD = "gnu++20"; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_WARN_UNDECLARED_SELECTOR = YES; GCC_WARN_UNINITIALIZED_AUTOS = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MTL_ENABLE_DEBUG_INFO = NO; SDKROOT = iphoneos; SWIFT_OPTIMIZATION_LEVEL = "-O"; SWIFT_VERSION = 6.0; }; name = Release; };
+		X01000000000000000000003 /* App Debug */ = {isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = FLOWMIND; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity"; INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; PRODUCT_BUNDLE_IDENTIFIER = com.flowmind.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+		X01000000000000000000004 /* App Release */ = {isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = FLOWMIND; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity"; INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; PRODUCT_BUNDLE_IDENTIFIER = com.flowmind.app; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+		X01000000000000000000005 /* Tests Debug */ = {isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.flowmind.appTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FlowMind.app/FlowMind"; }; name = Debug; };
+		X01000000000000000000006 /* Tests Release */ = {isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.flowmind.appTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FlowMind.app/FlowMind"; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C01000000000000000000001 /* Build configuration list for PBXNativeTarget "FlowMind" */ = {isa = XCConfigurationList; buildConfigurations = (X01000000000000000000003, X01000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		C01000000000000000000002 /* Build configuration list for PBXNativeTarget "FlowMindTests" */ = {isa = XCConfigurationList; buildConfigurations = (X01000000000000000000005, X01000000000000000000006); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		C01000000000000000000003 /* Build configuration list for PBXProject "FlowMind" */ = {isa = XCConfigurationList; buildConfigurations = (X01000000000000000000001, X01000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = P01000000000000000000002 /* Project object */;
+}
