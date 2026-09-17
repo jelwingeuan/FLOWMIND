@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(FlowMindStore.self) private var store
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("appAppearance") private var appAppearanceRawValue = AppAppearance.system.rawValue
     @State private var showingDeleteConfirmation = false
 
     var body: some View {
@@ -12,6 +13,15 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             } header: {
                 Text("Privacy")
+            }
+            Section("Appearance") {
+                Picker("Appearance", selection: $appAppearanceRawValue) {
+                    ForEach(AppAppearance.allCases) { appearance in
+                        Label(appearance.displayName, systemImage: appearance.systemImage)
+                            .tag(appearance.rawValue)
+                    }
+                }
+                .pickerStyle(.navigationLink)
             }
             Section("Processing") {
                 LabeledContent("AI Processing", value: "Mock mode")

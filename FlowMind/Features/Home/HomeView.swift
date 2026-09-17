@@ -80,20 +80,20 @@ struct HomeView: View {
                     Label("YOUR CONTROL CENTER", systemImage: "sparkles")
                         .font(.caption.weight(.bold))
                         .tracking(0.8)
-                        .foregroundStyle(Color.white.opacity(0.78))
+                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.78))
                     Spacer()
                     Image(systemName: "arrow.up.right")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(Color.white.opacity(0.72))
+                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.72))
                         .accessibilityHidden(true)
                 }
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Capture the next thing.")
                         .font(.system(.title2, design: .rounded).weight(.bold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.flowMindAccentForeground)
                     Text("Keep useful context close, then turn repeated work into a Flow when you are ready.")
                         .font(.subheadline)
-                        .foregroundStyle(Color.white.opacity(0.78))
+                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.78))
                 }
                 HStack(spacing: 14) {
                     Button {
@@ -104,7 +104,7 @@ struct HomeView: View {
                     .buttonStyle(LightButtonStyle())
                     Text("\(activeInboxCount) items ready")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.white.opacity(0.76))
+                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.76))
                 }
             }
         }

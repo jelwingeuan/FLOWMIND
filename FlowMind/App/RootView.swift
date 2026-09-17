@@ -7,9 +7,46 @@ enum AppTab: Hashable {
     case mind
 }
 
+enum AppAppearance: String, CaseIterable, Identifiable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .system: "circle.lefthalf.filled"
+        case .light: "sun.max"
+        case .dark: "moon.fill"
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+}
+
 struct RootView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("appAppearance") private var appAppearanceRawValue = AppAppearance.system.rawValue
     @State private var selectedTab: AppTab = .home
+
+    private var appAppearance: AppAppearance {
+        AppAppearance(rawValue: appAppearanceRawValue) ?? .system
+    }
 
     var body: some View {
         Group {
@@ -22,6 +59,7 @@ struct RootView: View {
             }
         }
         .tint(.flowMindAccent)
+        .preferredColorScheme(appAppearance.colorScheme)
     }
 }
 

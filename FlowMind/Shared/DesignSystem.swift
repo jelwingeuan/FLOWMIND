@@ -4,11 +4,19 @@ extension Color {
     static let flowMindAccent = Color(red: 0.08, green: 0.34, blue: 0.39)
     static let flowMindAccentSoft = Color(red: 0.80, green: 0.91, blue: 0.89)
     static let flowMindHighlight = Color(red: 0.93, green: 0.51, blue: 0.20)
+    static let flowMindPrimaryBackground = Color(uiColor: .systemBackground)
     static let flowMindBackground = Color(uiColor: .systemGroupedBackground)
-    static let flowMindSurface = Color(uiColor: .secondarySystemBackground)
-    static let flowMindInk = Color(uiColor: .label)
-    static let flowMindSuccess = Color(red: 0.18, green: 0.58, blue: 0.39)
-    static let flowMindWarning = Color(red: 0.77, green: 0.48, blue: 0.14)
+    static let flowMindCardBackground = Color(uiColor: .secondarySystemBackground)
+    static let flowMindSurface = flowMindCardBackground
+    static let flowMindPrimaryText = Color(uiColor: .label)
+    static let flowMindSecondaryText = Color(uiColor: .secondaryLabel)
+    static let flowMindTertiaryText = Color(uiColor: .tertiaryLabel)
+    static let flowMindInk = flowMindPrimaryText
+    static let flowMindCardBorder = Color(uiColor: .separator).opacity(0.45)
+    static let flowMindAccentForeground = Color.white
+    static let flowMindSuccess = Color(uiColor: .systemGreen)
+    static let flowMindWarning = Color(uiColor: .systemOrange)
+    static let flowMindError = Color(uiColor: .systemRed)
 }
 
 struct FlowMindCard<Content: View>: View {
@@ -21,7 +29,7 @@ struct FlowMindCard<Content: View>: View {
     init(
         padding: CGFloat = 18,
         fill: Color = .flowMindSurface,
-        border: Color = .clear,
+        border: Color = .flowMindCardBorder,
         @ViewBuilder content: () -> Content
     ) {
         self.content = content()
@@ -104,7 +112,7 @@ struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
-            .foregroundStyle(.white)
+            .foregroundStyle(Color.flowMindAccentForeground)
             .frame(minHeight: 52)
             .padding(.horizontal, 18)
             .background(Color.flowMindAccent.opacity(configuration.isPressed ? 0.78 : 1))
@@ -133,7 +141,7 @@ struct LightButtonStyle: ButtonStyle {
             .foregroundStyle(Color.flowMindAccent)
             .frame(minHeight: 46)
             .padding(.horizontal, 15)
-            .background(Color.white.opacity(configuration.isPressed ? 0.78 : 1))
+            .background(Color.flowMindAccentForeground.opacity(configuration.isPressed ? 0.78 : 1))
             .clipShape(.rect(cornerRadius: 14))
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
