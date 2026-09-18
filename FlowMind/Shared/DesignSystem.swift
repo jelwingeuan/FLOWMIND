@@ -202,7 +202,13 @@ struct FlowMindIconTile: View {
 }
 
 extension Date {
+    @MainActor
     var flowMindRelative: String {
-        RelativeDateTimeFormatter().localizedString(for: self, relativeTo: Date())
+        FlowMindFormatters.relativeDate.localizedString(for: self, relativeTo: Date())
     }
+}
+
+@MainActor
+private enum FlowMindFormatters {
+    static let relativeDate = RelativeDateTimeFormatter()
 }

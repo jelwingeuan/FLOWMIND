@@ -29,6 +29,38 @@ final class FlowMindTests: XCTestCase {
     }
 
     @MainActor
+    func testStoreCanDeferInitialLoadUntilRequested() throws {
+        let container = try makeContainer()
+        let item = InboxItem(
+            id: UUID(),
+            createdAt: Date(),
+            updatedAt: Date(),
+            contentType: .text,
+            title: "Deferred note",
+            sourceFilename: nil,
+            sourceURL: nil,
+            plainTextContent: "A saved note",
+            processingStatus: .ready,
+            detectedCategory: .note,
+            summary: "A saved note",
+            extractedFields: [:],
+            suggestedActions: [],
+            isArchived: false
+        )
+        container.mainContext.insert(InboxItemRecord(item: item))
+        try container.mainContext.save()
+
+        let store = FlowMindStore(modelContext: container.mainContext, loadImmediately: false)
+        XCTAssertTrue(store.inboxItems.isEmpty)
+
+        store.loadIfNeeded()
+
+        XCTAssertEqual(store.inboxItems.map(\.id), [item.id])
+        store.loadIfNeeded()
+        XCTAssertEqual(store.inboxItems.map(\.id), [item.id])
+    }
+
+    @MainActor
     func testPersistedUserContentWithDemoNamesSurvivesRelaunch() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

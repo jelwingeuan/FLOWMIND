@@ -13,22 +13,45 @@ final class FlowMindStore {
 
     @ObservationIgnored private let modelContext: ModelContext
     private let patternService: any PatternDetectionService = SimplePatternDetectionService(threshold: 3)
+    private var hasStartedLoading = false
 
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, loadImmediately: Bool = true) {
         self.modelContext = modelContext
+        if loadImmediately {
+            reload()
+        }
+    }
+
+    func loadIfNeeded() {
+        guard !hasStartedLoading else { return }
         reload()
     }
 
     func reload() {
+        hasStartedLoading = true
         do {
-            inboxItems = try modelContext.fetch(FetchDescriptor<InboxItemRecord>()).map(\.domainValue).sorted { $0.createdAt > $1.createdAt }
-            flows = try modelContext.fetch(FetchDescriptor<FlowRecord>()).map(\.domainValue).sorted { $0.name < $1.name }
+            let inboxDescriptor = FetchDescriptor<InboxItemRecord>(
+                predicate: #Predicate { !$0.isArchived },
+                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+            )
+            inboxItems = try modelContext.fetch(inboxDescriptor).map(\.listValue)
+
+            let flowDescriptor = FetchDescriptor<FlowRecord>(
+                sortBy: [SortDescriptor(\.name, order: .forward)]
+            )
+            flows = try modelContext.fetch(flowDescriptor).map(\.domainValue)
+
             let flowNames = Dictionary(uniqueKeysWithValues: flows.map { ($0.id, $0.name) })
-            activity = try modelContext.fetch(FetchDescriptor<FlowRunRecord>()).map { run in
+            var activityDescriptor = FetchDescriptor<FlowRunRecord>(
+                sortBy: [SortDescriptor(\.startedAt, order: .reverse)]
+            )
+            activityDescriptor.fetchLimit = 50
+            activity = try modelContext.fetch(activityDescriptor).map { run in
                 ActivityRecord(id: run.id, flowName: flowNames[run.flowID] ?? "FLOWMIND Flow", action: run.executedActions, timestamp: run.completedAt ?? run.startedAt, status: run.status.capitalized)
-            }.sorted { $0.timestamp > $1.timestamp }
+            }
             refreshPatterns()
         } catch {
+            hasStartedLoading = false
             errorMessage = "FLOWMIND could not load local data."
         }
     }
@@ -89,14 +112,20 @@ final class FlowMindStore {
     func createFlow(from definition: FlowDefinition) -> FlowSummary? {
         let flow = FlowSummary(id: UUID(), name: definition.name, icon: "bolt.fill", trigger: definition.trigger, condition: definition.condition, actionSummary: definition.actions.joined(separator: " -> "), isEnabled: true, runCount: 0, successfulRunCount: 0, lastRunAt: nil, creationSource: "manual")
         modelContext.insert(FlowRecord(flow: flow))
-        return persistAndReload() ? flow : nil
+        guard persist() else { return nil }
+        flows.append(flow)
+        flows.sort { $0.name < $1.name }
+        return flow
     }
 
     @discardableResult
     func createFlow(from item: InboxItem) -> FlowSummary? {
         let flow = FlowSummary(id: UUID(), name: item.detectedCategory == .receipt ? "Receipt Capture" : "\(item.detectedCategory.label) Capture", icon: "bolt.fill", trigger: "Something is shared", condition: "It is a \(item.detectedCategory.label.lowercased())", actionSummary: item.suggestedActions.prefix(2).joined(separator: " -> "), isEnabled: true, runCount: 0, successfulRunCount: 0, lastRunAt: nil, creationSource: "suggested")
         modelContext.insert(FlowRecord(flow: flow))
-        return persistAndReload() ? flow : nil
+        guard persist() else { return nil }
+        flows.append(flow)
+        flows.sort { $0.name < $1.name }
+        return flow
     }
 
     func run(flow: FlowSummary, with item: InboxItem) {
@@ -105,10 +134,35 @@ final class FlowMindStore {
         guard let record = try? modelContext.fetch(descriptor).first else { return }
         record.runCount += 1
         record.successfulRunCount += 1
-        record.lastRunAt = Date()
+        let completedAt = Date()
+        record.lastRunAt = completedAt
         record.updatedAt = Date()
-        modelContext.insert(FlowRunRecord(flowID: flow.id, inputItemID: item.id, actions: item.suggestedActions))
-        persistAndReload()
+        let runRecord = FlowRunRecord(flowID: flow.id, inputItemID: item.id, actions: item.suggestedActions)
+        modelContext.insert(runRecord)
+        guard persist() else { return }
+
+        if let index = flows.firstIndex(where: { $0.id == flow.id }) {
+            flows[index] = FlowSummary(
+                id: flow.id,
+                name: flow.name,
+                icon: flow.icon,
+                trigger: flow.trigger,
+                condition: flow.condition,
+                actionSummary: flow.actionSummary,
+                isEnabled: flow.isEnabled,
+                runCount: record.runCount,
+                successfulRunCount: record.successfulRunCount,
+                lastRunAt: record.lastRunAt,
+                creationSource: flow.creationSource
+            )
+        }
+        activity.insert(
+            ActivityRecord(id: runRecord.id, flowName: flow.name, action: runRecord.executedActions, timestamp: completedAt, status: runRecord.status.capitalized),
+            at: 0
+        )
+        if activity.count > 50 {
+            activity.removeLast(activity.count - 50)
+        }
     }
 
     func archive(item: InboxItem) {
@@ -117,7 +171,9 @@ final class FlowMindStore {
         guard let record = try? modelContext.fetch(descriptor).first else { return }
         record.isArchived = true
         record.updatedAt = Date()
-        persistAndReload()
+        guard persist() else { return }
+        inboxItems.removeAll { $0.id == item.id }
+        refreshPatterns()
     }
 
     func deleteAllData() {
@@ -142,10 +198,9 @@ final class FlowMindStore {
     }
 
     @discardableResult
-    private func persistAndReload() -> Bool {
+    private func persist() -> Bool {
         do {
             try modelContext.save()
-            reload()
             return true
         } catch {
             modelContext.rollback()
@@ -189,6 +244,9 @@ final class FlowMindStore {
             isArchived: false
         )
         modelContext.insert(InboxItemRecord(item: item))
-        return persistAndReload()
+        guard persist() else { return false }
+        inboxItems.insert(item, at: 0)
+        refreshPatterns()
+        return true
     }
 }

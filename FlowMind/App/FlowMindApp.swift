@@ -17,7 +17,7 @@ struct FlowMindApp: App {
             fatalError("FLOWMIND could not create its local data store: \(error)")
         }
 
-        _store = State(initialValue: FlowMindStore(modelContext: modelContainer.mainContext))
+        _store = State(initialValue: FlowMindStore(modelContext: modelContainer.mainContext, loadImmediately: false))
     }
 
     var body: some Scene {

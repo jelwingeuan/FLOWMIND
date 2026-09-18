@@ -169,6 +169,14 @@ final class InboxItemRecord {
     }
 
     var domainValue: InboxItem {
+        makeDomainValue(attachmentData: attachmentData)
+    }
+
+    var listValue: InboxItem {
+        makeDomainValue(attachmentData: nil)
+    }
+
+    private func makeDomainValue(attachmentData: Data?) -> InboxItem {
         InboxItem(
             id: id,
             createdAt: createdAt,

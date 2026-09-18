@@ -85,6 +85,7 @@ struct AddInboxItemSheet: View {
     @State private var isLoadingPhoto = false
     @State private var selectedFileData: Data?
     @State private var selectedFileName: String?
+    @State private var isLoadingFile = false
     @State private var showingFileImporter = false
     @State private var showingSaveError = false
     @State private var showingFirstItemReady = false
@@ -124,7 +125,12 @@ struct AddInboxItemSheet: View {
                         } label: {
                             Label(selectedFileName == nil ? "Choose file" : "Choose another file", systemImage: "doc")
                         }
-                        if let selectedFileName {
+                        if isLoadingFile {
+                            HStack {
+                                ProgressView()
+                                Text("Preparing file...")
+                            }
+                        } else if let selectedFileName {
                             Label(selectedFileName, systemImage: "checkmark.circle.fill")
                                 .foregroundStyle(Color.flowMindSuccess)
                                 .lineLimit(1)
@@ -188,7 +194,7 @@ struct AddInboxItemSheet: View {
     private var isSaveDisabled: Bool {
         switch kind {
         case .photo: photoData == nil || isLoadingPhoto
-        case .file: selectedFileData == nil || selectedFileName == nil
+        case .file: selectedFileData == nil || selectedFileName == nil || isLoadingFile
         case .link: link.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .text: text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
@@ -233,16 +239,26 @@ struct AddInboxItemSheet: View {
 
     private func importFile(_ result: Result<URL, Error>) {
         guard case let .success(url) = result else { return }
+        selectedFileData = nil
+        selectedFileName = nil
         let accessed = url.startAccessingSecurityScopedResource()
-        defer {
-            if accessed { url.stopAccessingSecurityScopedResource() }
-        }
-        do {
-            selectedFileData = try Data(contentsOf: url)
+        isLoadingFile = true
+        Task {
+            let data = await Task.detached(priority: .userInitiated) {
+                try? Data(contentsOf: url, options: [.mappedIfSafe])
+            }.value
+            defer {
+                if accessed { url.stopAccessingSecurityScopedResource() }
+                isLoadingFile = false
+            }
+            guard !Task.isCancelled else { return }
+            guard let data, !data.isEmpty else {
+                store.errorMessage = "FLOWMIND could not read that file."
+                showingSaveError = true
+                return
+            }
+            selectedFileData = data
             selectedFileName = url.lastPathComponent
-        } catch {
-            store.errorMessage = "FLOWMIND could not read that file."
-            showingSaveError = true
         }
     }
 }

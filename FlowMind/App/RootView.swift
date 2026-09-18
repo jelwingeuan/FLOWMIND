@@ -65,6 +65,7 @@ struct RootView: View {
 }
 
 struct MainTabView: View {
+    @Environment(FlowMindStore.self) private var store
     @Binding private var selection: AppTab
 
     init(selection: Binding<AppTab>) {
@@ -88,6 +89,10 @@ struct MainTabView: View {
             NavigationStack { MindView() }
                 .tabItem { Label("Mind", systemImage: "lightbulb") }
                 .tag(AppTab.mind)
+        }
+        .task {
+            await Task.yield()
+            store.loadIfNeeded()
         }
     }
 }
