@@ -20,8 +20,7 @@ struct FlowsView: View {
                     Button("Learn About Flows") {
                         showingHelp = true
                     }
-                    .font(.subheadline.weight(.semibold))
-                    .frame(maxWidth: .infinity)
+                    .buttonStyle(SecondaryTextButtonStyle())
                 } else {
                     ForEach(store.flows) { flow in
                         FlowCard(flow: flow)

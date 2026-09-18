@@ -200,16 +200,31 @@ struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
-            .foregroundStyle(Color.flowMindAccent)
-            .frame(minHeight: 48)
+            .foregroundStyle(Color.flowMindAccentForeground)
+            .frame(minWidth: 0, minHeight: 48, alignment: .center)
+            .multilineTextAlignment(.center)
             .padding(.horizontal, 16)
             .flowMindGlassSurface(
                 tint: Color.flowMindAccent,
                 interactive: true,
                 cornerRadius: 15,
-                fallbackFill: Color.flowMindAccent.opacity(configuration.isPressed ? 0.16 : 0.09),
+                fallbackFill: Color.flowMindAccentFill.opacity(configuration.isPressed ? 0.78 : 1),
                 fallbackBorder: .clear
             )
+    }
+}
+
+struct SecondaryTextButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Color.flowMindAccent)
+            .frame(minHeight: 44, alignment: .center)
+            .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+            .opacity(configuration.isPressed ? 0.65 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 

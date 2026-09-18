@@ -22,8 +22,7 @@ struct MindView: View {
                         Button("How Mind Works") {
                             showingHelp = true
                         }
-                        .buttonStyle(SecondaryButtonStyle())
-                        .frame(maxWidth: .infinity)
+                        .buttonStyle(SecondaryTextButtonStyle())
                     }
                 } else {
                     ForEach(store.patternSuggestions) { suggestion in

@@ -33,8 +33,7 @@ struct InboxView: View {
                         Button("Learn How to Share") {
                             showingGettingStarted = true
                         }
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity)
+                        .buttonStyle(SecondaryTextButtonStyle())
                     }
                 } else {
                     ForEach(visibleItems) { item in
