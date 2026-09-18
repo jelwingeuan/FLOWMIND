@@ -217,7 +217,7 @@ struct PrimaryGlassButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
-            .foregroundStyle(Color.flowMindAccent)
+            .foregroundStyle(Color.flowMindAccentForeground)
             .frame(minHeight: 52)
             .padding(.horizontal, 18)
             .flowMindGlassSurface(

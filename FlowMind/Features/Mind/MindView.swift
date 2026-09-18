@@ -49,6 +49,7 @@ struct MindView: View {
             }
             .padding(20)
         }
+        .safeAreaPadding(.bottom, 96)
         .background(Color.flowMindBackground)
         .navigationTitle("Mind")
         .sheet(isPresented: $showingHelp) {

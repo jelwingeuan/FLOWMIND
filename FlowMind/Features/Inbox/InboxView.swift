@@ -49,6 +49,7 @@ struct InboxView: View {
             }
             .padding(20)
         }
+        .safeAreaPadding(.bottom, 96)
         .background(Color.flowMindBackground)
         .navigationTitle("Inbox")
         .searchable(text: $searchText, prompt: "Search your inbox")

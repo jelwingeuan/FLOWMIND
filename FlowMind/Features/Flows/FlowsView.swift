@@ -30,6 +30,7 @@ struct FlowsView: View {
             }
             .padding(20)
         }
+        .safeAreaPadding(.bottom, 96)
         .background(Color.flowMindBackground)
         .navigationTitle("Flows")
         .toolbar {

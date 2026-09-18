@@ -23,13 +23,18 @@ struct HomeView: View {
                 focusCard
                 quickStats
                 inboxPreview
-                flowsPreview
-                activityPreview
+                if !store.flows.isEmpty {
+                    flowsPreview
+                }
+                if !store.activity.isEmpty {
+                    activityPreview
+                }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 22)
         }
         .scrollIndicators(.hidden)
+        .safeAreaPadding(.bottom, 96)
         .background(Color.flowMindBackground)
         .navigationTitle("FLOWMIND")
         .toolbar {
@@ -141,8 +146,18 @@ struct HomeView: View {
             FlowMindCard(padding: 16) {
                 VStack(spacing: 0) {
                     if activeInboxCount == 0 {
-                        EmptyStateView(icon: "tray", title: "Your Smart Inbox is empty.", detail: "Add a photo, document, link, or text to get started.")
-                            .padding(.vertical, 16)
+                        VStack(spacing: 10) {
+                            Image(systemName: "tray")
+                                .font(.system(size: 32, weight: .medium))
+                                .foregroundStyle(Color.flowMindAccent)
+                                .accessibilityHidden(true)
+                            Text("Your Smart Inbox is empty.")
+                                .font(.headline)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .accessibilityElement(children: .combine)
                     }
                     ForEach(Array(store.inboxItems.filter { !$0.isArchived }.prefix(3).enumerated()), id: \.element.id) { index, item in
                         if index > 0 { Divider().padding(.vertical, 12) }
