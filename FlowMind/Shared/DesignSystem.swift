@@ -56,6 +56,75 @@ struct FlowMindCard<Content: View>: View {
     }
 }
 
+struct FlowMindGlassCard<Content: View>: View {
+    let content: Content
+    private let padding: CGFloat
+    private let tint: Color?
+    private let cornerRadius: CGFloat
+    private let fallbackFill: Color
+    private let fallbackBorder: Color
+
+    init(
+        padding: CGFloat = 18,
+        tint: Color? = nil,
+        cornerRadius: CGFloat = 18,
+        fallbackFill: Color = .flowMindSurface,
+        fallbackBorder: Color = .flowMindCardBorder,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.content = content()
+        self.padding = padding
+        self.tint = tint
+        self.cornerRadius = cornerRadius
+        self.fallbackFill = fallbackFill
+        self.fallbackBorder = fallbackBorder
+    }
+
+    var body: some View {
+        content
+            .padding(padding)
+            .flowMindGlassSurface(
+                tint: tint,
+                cornerRadius: cornerRadius,
+                fallbackFill: fallbackFill,
+                fallbackBorder: fallbackBorder
+            )
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func flowMindGlassSurface(
+        tint: Color? = nil,
+        interactive: Bool = false,
+        cornerRadius: CGFloat = 18,
+        fallbackFill: Color = .flowMindSurface,
+        fallbackBorder: Color = .flowMindCardBorder
+    ) -> some View {
+        if #available(iOS 26.0, *) {
+            if let tint {
+                if interactive {
+                    self.glassEffect(.regular.tint(tint).interactive(), in: RoundedRectangle(cornerRadius: cornerRadius))
+                } else {
+                    self.glassEffect(.regular.tint(tint), in: RoundedRectangle(cornerRadius: cornerRadius))
+                }
+            } else if interactive {
+                self.glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: cornerRadius))
+            } else {
+                self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+            }
+        } else {
+            self
+                .background(fallbackFill)
+                .clipShape(.rect(cornerRadius: cornerRadius))
+                .overlay {
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .stroke(fallbackBorder, lineWidth: 1)
+                }
+        }
+    }
+}
+
 struct SectionHeader: View {
     let title: String
     let actionTitle: String?
@@ -134,8 +203,32 @@ struct SecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(Color.flowMindAccent)
             .frame(minHeight: 48)
             .padding(.horizontal, 16)
-            .background(Color.flowMindAccent.opacity(configuration.isPressed ? 0.16 : 0.09))
-            .clipShape(.rect(cornerRadius: 15))
+            .flowMindGlassSurface(
+                tint: Color.flowMindAccent,
+                interactive: true,
+                cornerRadius: 15,
+                fallbackFill: Color.flowMindAccent.opacity(configuration.isPressed ? 0.16 : 0.09),
+                fallbackBorder: .clear
+            )
+    }
+}
+
+struct PrimaryGlassButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body.weight(.semibold))
+            .foregroundStyle(Color.flowMindAccent)
+            .frame(minHeight: 52)
+            .padding(.horizontal, 18)
+            .flowMindGlassSurface(
+                tint: Color.flowMindAccent,
+                interactive: true,
+                cornerRadius: 16,
+                fallbackFill: Color.flowMindAccentFill.opacity(configuration.isPressed ? 0.78 : 1),
+                fallbackBorder: .clear
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
@@ -146,8 +239,13 @@ struct LightButtonStyle: ButtonStyle {
             .foregroundStyle(Color.flowMindAccentFill)
             .frame(minHeight: 46)
             .padding(.horizontal, 15)
-            .background(Color.flowMindAccentForeground.opacity(configuration.isPressed ? 0.78 : 1))
-            .clipShape(.rect(cornerRadius: 14))
+            .flowMindGlassSurface(
+                tint: Color.white.opacity(0.65),
+                interactive: true,
+                cornerRadius: 14,
+                fallbackFill: Color.flowMindAccentForeground.opacity(configuration.isPressed ? 0.78 : 1),
+                fallbackBorder: .clear
+            )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }

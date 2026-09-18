@@ -32,7 +32,7 @@ struct FirstItemGuidanceCard: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        FlowMindCard(border: Color.flowMindAccent.opacity(0.35)) {
+        FlowMindGlassCard(tint: Color.flowMindAccent, fallbackBorder: Color.flowMindAccent.opacity(0.35)) {
             VStack(alignment: .leading, spacing: 14) {
                 Label("YOUR FIRST ITEM IS READY", systemImage: "sparkles")
                     .font(.caption.weight(.bold))
@@ -75,7 +75,7 @@ struct FirstFlowSuccessSheet: View {
             Button("Run Flow", systemImage: "play.fill") {
                 showingRunner = true
             }
-            .buttonStyle(PrimaryButtonStyle())
+            .buttonStyle(PrimaryGlassButtonStyle())
             Button("Done") {
                 onDone()
                 dismiss()

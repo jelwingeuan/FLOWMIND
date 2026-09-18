@@ -25,8 +25,7 @@ struct FlowBuilderView: View {
                     TextField("Whenever I share a restaurant receipt...", text: $prompt, axis: .vertical)
                         .lineLimit(4...8)
                         .padding(14)
-                        .background(Color.flowMindSurface)
-                        .clipShape(.rect(cornerRadius: 15))
+                        .flowMindGlassSurface(interactive: true, cornerRadius: 15)
                         .onSubmit { generate() }
                     Button {
                         generate()
@@ -34,7 +33,7 @@ struct FlowBuilderView: View {
                         Label(isGenerating ? "Thinking..." : "Suggest a Flow", systemImage: "wand.and.stars")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(PrimaryButtonStyle())
+                    .buttonStyle(PrimaryGlassButtonStyle())
                     .disabled(prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGenerating)
                     if let definition {
                         GeneratedFlowPreview(definition: definition) {
@@ -115,7 +114,6 @@ struct GeneratedFlowPreview: View {
             .buttonStyle(SecondaryButtonStyle())
         }
         .padding(18)
-        .background(Color.flowMindSurface)
-        .clipShape(.rect(cornerRadius: 20))
+        .flowMindGlassSurface(cornerRadius: 20)
     }
 }

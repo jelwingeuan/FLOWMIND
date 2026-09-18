@@ -61,7 +61,7 @@ struct PatternCard: View {
     let suggestion: PatternSuggestion
 
     var body: some View {
-        FlowMindCard {
+        FlowMindGlassCard(tint: Color.flowMindAccent) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top) {
                     Image(systemName: "lightbulb.fill")

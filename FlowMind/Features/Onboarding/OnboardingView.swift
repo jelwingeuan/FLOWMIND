@@ -46,7 +46,7 @@ struct OnboardingView: View {
                     Label(step.primaryActionTitle, systemImage: step == .ready ? "arrow.right" : "chevron.right")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(PrimaryGlassButtonStyle())
 
                 if step == .ready {
                     Button("How it works") {
@@ -212,8 +212,7 @@ private struct ContentTypeGrid: View {
                         .font(.subheadline.weight(.semibold))
                 }
                 .frame(maxWidth: .infinity, minHeight: 92)
-                .background(Color.flowMindSurface)
-                .clipShape(.rect(cornerRadius: 14))
+                .flowMindGlassSurface(cornerRadius: 14)
             }
         }
         .accessibilityElement(children: .combine)
@@ -231,8 +230,7 @@ private struct LearningSequence: View {
                     .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.flowMindSurface)
-                    .clipShape(.rect(cornerRadius: 12))
+                    .flowMindGlassSurface(cornerRadius: 12)
                 if step != steps.last {
                     Image(systemName: "arrow.down")
                         .font(.caption.weight(.bold))
@@ -254,8 +252,7 @@ private struct FlowExampleDiagram: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.flowMindSurface)
-        .clipShape(.rect(cornerRadius: 16))
+        .flowMindGlassSurface(cornerRadius: 16)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Flow example: When something is shared, if it matches your rule, perform your actions")
     }
@@ -274,8 +271,7 @@ private struct PrivacyPromise: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.flowMindSurface)
-        .clipShape(.rect(cornerRadius: 16))
+        .flowMindGlassSurface(cornerRadius: 16)
     }
 }
 

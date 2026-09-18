@@ -66,7 +66,7 @@ struct InboxItemDetailView: View {
                     Label("Create Flow from these actions", systemImage: "bolt.fill")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(PrimaryGlassButtonStyle())
             }
             .padding(20)
         }
