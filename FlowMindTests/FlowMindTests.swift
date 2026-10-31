@@ -117,6 +117,33 @@ final class FlowMindTests: XCTestCase {
     }
 
     @MainActor
+    func testArchivedItemStaysOutOfInboxAfterRelaunch() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("test.store")
+        var itemID: UUID?
+
+        do {
+            let container = try makeContainer(url: url)
+            let store = FlowMindStore(modelContext: container.mainContext)
+            XCTAssertTrue(store.addTextItem(title: "My note", text: "Archive this note"))
+            let item = try XCTUnwrap(store.inboxItems.first)
+            itemID = item.id
+            XCTAssertTrue(store.archive(item: item))
+            XCTAssertTrue(store.inboxItems.isEmpty)
+        }
+
+        let reopenedContainer = try makeContainer(url: url)
+        let reopened = FlowMindStore(modelContext: reopenedContainer.mainContext)
+        XCTAssertTrue(reopened.inboxItems.isEmpty)
+        let records = try reopenedContainer.mainContext.fetch(FetchDescriptor<InboxItemRecord>())
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records.first?.id, itemID)
+        XCTAssertEqual(records.first?.isArchived, true)
+    }
+
+    @MainActor
     func testLinkAndFileCapturePersistOnlyAfterExplicitSave() throws {
         let container = try makeContainer()
         let store = FlowMindStore(modelContext: container.mainContext)

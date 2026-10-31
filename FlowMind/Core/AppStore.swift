@@ -167,15 +167,19 @@ final class FlowMindStore {
         }
     }
 
-    func archive(item: InboxItem) {
+    func archive(item: InboxItem) -> Bool {
         let itemID = item.id
         let descriptor = FetchDescriptor<InboxItemRecord>(predicate: #Predicate { $0.id == itemID })
-        guard let record = try? modelContext.fetch(descriptor).first else { return }
+        guard let record = try? modelContext.fetch(descriptor).first else {
+            errorMessage = "FLOWMIND could not access this item."
+            return false
+        }
         record.isArchived = true
         record.updatedAt = Date()
-        guard persist() else { return }
+        guard persist() else { return false }
         inboxItems.removeAll { $0.id == item.id }
         refreshPatterns()
+        return true
     }
 
     func deleteAllData() {

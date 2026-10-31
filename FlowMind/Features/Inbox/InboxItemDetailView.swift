@@ -3,9 +3,11 @@ import SwiftUI
 struct InboxItemDetailView: View {
     @Environment(FlowMindStore.self) private var store
     @Environment(UserEducationState.self) private var education
+    @Environment(\.dismiss) private var dismiss
     let item: InboxItem
     @State private var firstCreatedFlow: FlowSummary?
     @State private var showingCreatedFlow = false
+    @State private var showingArchiveError = false
 
     var body: some View {
         ScrollView {
@@ -76,7 +78,11 @@ struct InboxItemDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    store.archive(item: item)
+                    if store.archive(item: item) {
+                        dismiss()
+                    } else {
+                        showingArchiveError = true
+                    }
                 } label: {
                     Image(systemName: "archivebox")
                 }
@@ -87,6 +93,11 @@ struct InboxItemDetailView: View {
             Button("Done", role: .cancel) { }
         } message: {
             Text("You can find it in the Flows tab and run it on a compatible item.")
+        }
+        .alert("Item could not be archived", isPresented: $showingArchiveError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(store.errorMessage ?? "Please try again.")
         }
         .sheet(item: $firstCreatedFlow) { flow in
             FirstFlowSuccessSheet(flow: flow) { }
