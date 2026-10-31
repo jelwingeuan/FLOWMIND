@@ -232,6 +232,35 @@ final class FlowMindTests: XCTestCase {
         XCTAssertEqual(service.suggestions(from: [], inbox: inbox).count, 1)
     }
 
+    @MainActor
+    func testAcceptedPatternCreatesSuggestedFlowOnce() throws {
+        let container = try makeContainer()
+        for index in 0..<3 {
+            let item = InboxItem(
+                id: UUID(), createdAt: Date(), updatedAt: Date(), contentType: .image,
+                title: "Receipt \(index)", sourceFilename: nil, sourceURL: nil,
+                plainTextContent: nil, processingStatus: .ready, detectedCategory: .receipt,
+                summary: "Receipt", extractedFields: [:], suggestedActions: ["Extract total"],
+                isArchived: false
+            )
+            container.mainContext.insert(InboxItemRecord(item: item))
+        }
+        try container.mainContext.save()
+
+        let store = FlowMindStore(modelContext: container.mainContext)
+        let suggestion = try XCTUnwrap(store.patternSuggestions.first)
+        let definition = suggestion.flowDefinition
+        XCTAssertEqual(definition.name, "Receipt Capture")
+        XCTAssertEqual(definition.actions, suggestion.actions)
+        XCTAssertEqual(definition.condition, "It is a receipt")
+
+        let flow = try XCTUnwrap(store.createFlow(from: definition, source: "suggested"))
+        XCTAssertEqual(flow.creationSource, "suggested")
+        XCTAssertEqual(flow.actionSummary, suggestion.actions.joined(separator: " -> "))
+        XCTAssertTrue(store.patternSuggestions.isEmpty)
+        XCTAssertTrue(FlowMindStore(modelContext: container.mainContext).patternSuggestions.isEmpty)
+    }
+
     func testMockFlowGenerationRecognizesReceipts() async throws {
         let definition = try await MockFlowGenerationService().generate(from: "Whenever I share a restaurant receipt, extract the total")
         XCTAssertEqual(definition.name, "Receipt Capture")

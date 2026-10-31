@@ -74,7 +74,7 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $selection) {
-            NavigationStack { HomeView() }
+            NavigationStack { HomeView(selection: $selection) }
                 .tabItem { Label("Home", systemImage: "house") }
                 .tag(AppTab.home)
 

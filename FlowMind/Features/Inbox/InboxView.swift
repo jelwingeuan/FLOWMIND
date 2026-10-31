@@ -19,16 +19,20 @@ struct InboxView: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 12) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 if visibleItems.isEmpty {
                     EmptyStateView(icon: searchText.isEmpty ? "tray" : "magnifyingglass", title: searchText.isEmpty ? "Your Smart Inbox is empty." : "No matching items.", detail: searchText.isEmpty ? "Add a photo, document, link, or text to get started." : "Try a different search.")
                         .frame(maxWidth: .infinity)
-                        .padding(.top, 80)
+                        .padding(.top, 88)
+                        .padding(.bottom, 24)
                     if searchText.isEmpty {
-                        Button("Add Something", systemImage: "plus") {
+                        Button {
                             showingAddItem = true
+                        } label: {
+                            Label("Add Something", systemImage: "plus")
+                                .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(SecondaryButtonStyle())
+                        .buttonStyle(PrimaryButtonStyle())
                         .frame(maxWidth: .infinity)
                         Button("Learn How to Share") {
                             showingGettingStarted = true
@@ -36,11 +40,17 @@ struct InboxView: View {
                         .buttonStyle(SecondaryTextButtonStyle())
                     }
                 } else {
-                    ForEach(visibleItems) { item in
+                    Text("\(visibleItems.count) ready to review")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .padding(.bottom, 12)
+                    ForEach(Array(visibleItems.enumerated()), id: \.element.id) { index, item in
+                        if index > 0 { Divider() }
                         NavigationLink {
                             InboxItemDetailView(item: item)
                         } label: {
-                            FlowMindCard { InboxRow(item: item) }
+                            InboxRow(item: item)
+                                .padding(.vertical, 12)
                         }
                         .buttonStyle(.plain)
                     }
@@ -48,8 +58,7 @@ struct InboxView: View {
             }
             .padding(20)
         }
-        .safeAreaPadding(.bottom, 96)
-        .background(Color.flowMindBackground)
+        .background(Color.flowMindPrimaryBackground)
         .navigationTitle("Inbox")
         .searchable(text: $searchText, prompt: "Search your inbox")
         .toolbar {
@@ -298,17 +307,20 @@ struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 38, weight: .medium))
+                .font(.system(size: 31, weight: .medium))
                 .foregroundStyle(Color.flowMindAccent)
+                .frame(width: 76, height: 76)
+                .background(Color.flowMindAccent.opacity(0.10))
+                .clipShape(Circle())
                 .accessibilityHidden(true)
             Text(title)
-                .font(.headline)
+                .font(.title3.weight(.semibold))
                 .multilineTextAlignment(.center)
             Text(detail)
-                .font(.body)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 12)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)

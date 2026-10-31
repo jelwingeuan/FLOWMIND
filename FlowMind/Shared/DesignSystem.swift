@@ -3,12 +3,12 @@ import SwiftUI
 extension Color {
     static let flowMindAccent = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.43, green: 0.78, blue: 0.81, alpha: 1)
-            : UIColor(red: 0.08, green: 0.34, blue: 0.39, alpha: 1)
+            ? UIColor(red: 0.43, green: 0.79, blue: 0.96, alpha: 1)
+            : UIColor(red: 0.07, green: 0.34, blue: 0.77, alpha: 1)
     })
-    static let flowMindAccentFill = Color(red: 0.08, green: 0.34, blue: 0.39)
-    static let flowMindAccentSoft = Color(red: 0.80, green: 0.91, blue: 0.89)
-    static let flowMindHighlight = Color(red: 0.93, green: 0.51, blue: 0.20)
+    static let flowMindAccentFill = Color(red: 0.07, green: 0.31, blue: 0.70)
+    static let flowMindAccentSoft = Color(red: 0.81, green: 0.91, blue: 0.99)
+    static let flowMindHighlight = Color(red: 0.86, green: 0.48, blue: 0.16)
     static let flowMindPrimaryBackground = Color(uiColor: .systemBackground)
     static let flowMindBackground = Color(uiColor: .systemGroupedBackground)
     static let flowMindCardBackground = Color(uiColor: .secondarySystemBackground)
@@ -48,9 +48,9 @@ struct FlowMindCard<Content: View>: View {
         content
             .padding(padding)
             .background(fill)
-            .clipShape(.rect(cornerRadius: 18))
+            .clipShape(.rect(cornerRadius: 8))
             .overlay {
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 8)
                     .stroke(border, lineWidth: hasBorder ? 1 : 0)
             }
     }
@@ -67,7 +67,7 @@ struct FlowMindGlassCard<Content: View>: View {
     init(
         padding: CGFloat = 18,
         tint: Color? = nil,
-        cornerRadius: CGFloat = 18,
+        cornerRadius: CGFloat = 8,
         fallbackFill: Color = .flowMindSurface,
         fallbackBorder: Color = .flowMindCardBorder,
         @ViewBuilder content: () -> Content
@@ -97,7 +97,7 @@ extension View {
     func flowMindGlassSurface(
         tint: Color? = nil,
         interactive: Bool = false,
-        cornerRadius: CGFloat = 18,
+        cornerRadius: CGFloat = 8,
         fallbackFill: Color = .flowMindSurface,
         fallbackBorder: Color = .flowMindCardBorder
     ) -> some View {
@@ -140,7 +140,6 @@ struct SectionHeader: View {
         HStack(alignment: .firstTextBaseline) {
             Text(title.uppercased())
                 .font(.caption.weight(.bold))
-                .tracking(0.8)
                 .foregroundStyle(.secondary)
             Spacer()
             if let actionTitle, let action {
@@ -190,7 +189,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .frame(minHeight: 52)
             .padding(.horizontal, 18)
             .background(Color.flowMindAccentFill.opacity(configuration.isPressed ? 0.78 : 1))
-            .clipShape(.rect(cornerRadius: 16))
+            .clipShape(.rect(cornerRadius: 8))
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
@@ -200,16 +199,16 @@ struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
-            .foregroundStyle(Color.flowMindAccentForeground)
+            .foregroundStyle(Color.flowMindAccent)
             .frame(minWidth: 0, minHeight: 48, alignment: .center)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 16)
             .flowMindGlassSurface(
-                tint: Color.flowMindAccent,
+                tint: Color.flowMindAccent.opacity(0.16),
                 interactive: true,
-                cornerRadius: 15,
-                fallbackFill: Color.flowMindAccentFill.opacity(configuration.isPressed ? 0.78 : 1),
-                fallbackBorder: .clear
+                cornerRadius: 8,
+                fallbackFill: Color.flowMindAccent.opacity(configuration.isPressed ? 0.16 : 0.10),
+                fallbackBorder: Color.flowMindAccent.opacity(0.20)
             )
     }
 }
@@ -238,7 +237,7 @@ struct PrimaryGlassButtonStyle: ButtonStyle {
             .flowMindGlassSurface(
                 tint: Color.flowMindAccent,
                 interactive: true,
-                cornerRadius: 16,
+                cornerRadius: 8,
                 fallbackFill: Color.flowMindAccentFill.opacity(configuration.isPressed ? 0.78 : 1),
                 fallbackBorder: .clear
             )
@@ -257,7 +256,7 @@ struct LightButtonStyle: ButtonStyle {
             .flowMindGlassSurface(
                 tint: Color.white.opacity(0.65),
                 interactive: true,
-                cornerRadius: 14,
+                cornerRadius: 8,
                 fallbackFill: Color.flowMindAccentForeground.opacity(configuration.isPressed ? 0.78 : 1),
                 fallbackBorder: .clear
             )
@@ -269,24 +268,18 @@ struct LightButtonStyle: ButtonStyle {
 struct FlowMindStat: View {
     let value: String
     let label: String
-    let systemImage: String
     let tint: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(tint)
-                .frame(width: 30, height: 30)
-                .background(tint.opacity(0.12))
-                .clipShape(.rect(cornerRadius: 9))
+        VStack(alignment: .leading, spacing: 5) {
             Text(value)
-                .font(.system(.title2, design: .rounded).weight(.bold))
-                .foregroundStyle(.primary)
+                .font(.system(.title, design: .rounded).weight(.semibold))
+                .foregroundStyle(tint)
+                .contentTransition(.numericText())
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)

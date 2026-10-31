@@ -109,12 +109,13 @@ final class FlowMindStore {
     }
 
     @discardableResult
-    func createFlow(from definition: FlowDefinition) -> FlowSummary? {
-        let flow = FlowSummary(id: UUID(), name: definition.name, icon: "bolt.fill", trigger: definition.trigger, condition: definition.condition, actionSummary: definition.actions.joined(separator: " -> "), isEnabled: true, runCount: 0, successfulRunCount: 0, lastRunAt: nil, creationSource: "manual")
+    func createFlow(from definition: FlowDefinition, source: String = "manual") -> FlowSummary? {
+        let flow = FlowSummary(id: UUID(), name: definition.name, icon: "bolt.fill", trigger: definition.trigger, condition: definition.condition, actionSummary: definition.actions.joined(separator: " -> "), isEnabled: true, runCount: 0, successfulRunCount: 0, lastRunAt: nil, creationSource: source)
         modelContext.insert(FlowRecord(flow: flow))
         guard persist() else { return nil }
         flows.append(flow)
         flows.sort { $0.name < $1.name }
+        refreshPatterns()
         return flow
     }
 
@@ -125,6 +126,7 @@ final class FlowMindStore {
         guard persist() else { return nil }
         flows.append(flow)
         flows.sort { $0.name < $1.name }
+        refreshPatterns()
         return flow
     }
 
@@ -211,6 +213,9 @@ final class FlowMindStore {
 
     private func refreshPatterns() {
         patternSuggestions = patternService.suggestions(from: activity, inbox: inboxItems)
+            .filter { suggestion in
+                !flows.contains { $0.name == suggestion.flowDefinition.name }
+            }
     }
 
     @discardableResult

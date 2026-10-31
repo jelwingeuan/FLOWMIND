@@ -2,11 +2,14 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(FlowMindStore.self) private var store
+    @Binding private var selection: AppTab
     @State private var showingSettings = false
     @State private var showingCapture = false
-    @State private var showingInbox = false
-    @State private var showingFlows = false
     @State private var showingGettingStarted = false
+
+    init(selection: Binding<AppTab> = .constant(.home)) {
+        _selection = selection
+    }
 
     private var activeInboxCount: Int {
         store.inboxItems.filter { !$0.isArchived }.count
@@ -18,31 +21,27 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 24) {
+            LazyVStack(alignment: .leading, spacing: 28) {
                 header
-                focusCard
+                capturePanel
                 quickStats
                 inboxPreview
-                if !store.flows.isEmpty {
-                    flowsPreview
-                }
-                if !store.activity.isEmpty {
-                    activityPreview
-                }
+                flowsPreview
+                activityPreview
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 22)
+            .padding(.vertical, 20)
         }
         .scrollIndicators(.hidden)
-        .safeAreaPadding(.bottom, 96)
-        .background(Color.flowMindBackground)
+        .background(Color.flowMindPrimaryBackground)
         .navigationTitle("FLOWMIND")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showingSettings = true
                 } label: {
-                    Image(systemName: "person.crop.circle")
+                    Image(systemName: "gearshape")
                 }
                 .accessibilityLabel("Open settings")
             }
@@ -54,120 +53,93 @@ struct HomeView: View {
             AddInboxItemSheet()
                 .presentationDetents([.large])
         }
-        .sheet(isPresented: $showingInbox) {
-            NavigationStack { InboxView() }
-        }
-        .sheet(isPresented: $showingFlows) {
-            NavigationStack { FlowsView() }
-        }
         .sheet(isPresented: $showingGettingStarted) {
             NavigationStack { GettingStartedView() }
         }
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 10) {
-                Text("FLOWMIND")
-                    .font(.caption.weight(.bold))
-                    .tracking(1.4)
-                    .foregroundStyle(Color.flowMindAccent)
-                StatusBadge(title: "On device", color: Color.flowMindSuccess, systemImage: "lock.fill")
-            }
+        VStack(alignment: .leading, spacing: 9) {
             Text(greeting)
-                .font(.system(.largeTitle, design: .rounded).weight(.bold))
-            Text(activeInboxCount == 0 ? "Start with FLOWMIND." : "A clear view of the work you want to keep moving.")
+                .font(.system(.largeTitle, design: .default).weight(.bold))
+            Text(activeInboxCount == 0 && store.flows.isEmpty
+                 ? "Make the work you repeat easier."
+                 : "Your work, in motion.")
                 .font(.body)
                 .foregroundStyle(.secondary)
+            Label("Private on this iPhone", systemImage: "lock.shield")
+                .font(.footnote.weight(.medium))
+                .foregroundStyle(Color.flowMindAccent)
+                .padding(.top, 2)
         }
     }
 
-    private var focusCard: some View {
-        FlowMindCard(padding: 20, fill: Color.flowMindAccentFill) {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack {
-                    Label("YOUR CONTROL CENTER", systemImage: "sparkles")
-                        .font(.caption.weight(.bold))
-                        .tracking(0.8)
-                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.78))
-                    Spacer()
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.72))
-                        .accessibilityHidden(true)
-                }
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(activeInboxCount == 0 ? "Start with FLOWMIND." : "Capture the next thing.")
-                        .font(.system(.title2, design: .rounded).weight(.bold))
-                        .foregroundStyle(Color.flowMindAccentForeground)
-                    Text(activeInboxCount == 0 ? "Send something to your Smart Inbox and decide what should happen to it." : "Keep useful context close, then turn repeated work into a Flow when you are ready.")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.78))
-                }
-                HStack(spacing: 14) {
-                    Button {
-                        showingCapture = true
-                    } label: {
-                        Label(activeInboxCount == 0 ? "Add Something" : "Quick capture", systemImage: "plus")
-                    }
-                    .buttonStyle(LightButtonStyle())
-                    if activeInboxCount == 0 {
-                        Button("How FLOWMIND works") {
-                            showingGettingStarted = true
-                        }
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.flowMindAccentForeground.opacity(0.82))
-                    } else {
-                        Text("\(activeInboxCount) items ready")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(Color.flowMindAccentForeground.opacity(0.76))
-                    }
-                }
+    private var capturePanel: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Image(systemName: "square.and.arrow.down")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Color.flowMindAccent)
+                    .accessibilityHidden(true)
+                Spacer()
+                Text("CAPTURE")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.secondary)
             }
+            Text(activeInboxCount == 0 ? "Start with something." : "Capture the next thing.")
+                .font(.system(.title2, design: .default).weight(.semibold))
+            Text("Add a note, link, photo, or document. Keep it in your Inbox until you're ready to act.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button {
+                showingCapture = true
+            } label: {
+                Label("Add to Smart Inbox", systemImage: "plus")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            Button("How FLOWMIND works", systemImage: "arrow.up.right") {
+                showingGettingStarted = true
+            }
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(Color.flowMindAccent)
         }
+        .padding(20)
+        .background(Color.flowMindSurface)
+        .clipShape(.rect(cornerRadius: 8))
+        .overlay { RoundedRectangle(cornerRadius: 8).stroke(Color.flowMindCardBorder, lineWidth: 1) }
     }
 
     private var quickStats: some View {
-        HStack(spacing: 0) {
-            FlowMindStat(value: "\(activeInboxCount)", label: "Ready to review", systemImage: "tray.full", tint: Color.flowMindAccent)
-            Divider().frame(height: 76)
-            FlowMindStat(value: "\(activeFlowCount)", label: "Active Flows", systemImage: "bolt.fill", tint: Color.flowMindHighlight)
-            Divider().frame(height: 76)
-            FlowMindStat(value: "\(store.activity.count)", label: "Runs logged", systemImage: "checkmark.seal", tint: Color.flowMindSuccess)
+        HStack(alignment: .top, spacing: 12) {
+            FlowMindStat(value: "\(activeInboxCount)", label: "In Inbox", tint: .flowMindAccent)
+            Divider().frame(height: 64)
+            FlowMindStat(value: "\(activeFlowCount)", label: "Active Flows", tint: .flowMindHighlight)
+            Divider().frame(height: 64)
+            FlowMindStat(value: "\(store.activity.count)", label: "Runs logged", tint: .flowMindSuccess)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 4)
     }
 
     private var inboxPreview: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader("Smart Inbox", actionTitle: "See all") {
-                showingInbox = true
+            SectionHeader("Smart Inbox", actionTitle: "Open Inbox") {
+                selection = .inbox
             }
-            FlowMindCard(padding: 16) {
-                VStack(spacing: 0) {
-                    if activeInboxCount == 0 {
-                        VStack(spacing: 10) {
-                            Image(systemName: "tray")
-                                .font(.system(size: 32, weight: .medium))
-                                .foregroundStyle(Color.flowMindAccent)
-                                .accessibilityHidden(true)
-                            Text("Your Smart Inbox is empty.")
-                                .font(.headline)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .accessibilityElement(children: .combine)
+            VStack(spacing: 0) {
+                if activeInboxCount == 0 {
+                    HomeEmptyRow(icon: "tray", title: "Your Smart Inbox is empty.", detail: "Things you add will be ready to review here.")
+                }
+                ForEach(Array(store.inboxItems.filter { !$0.isArchived }.prefix(3).enumerated()), id: \.element.id) { index, item in
+                    if index > 0 { Divider() }
+                    NavigationLink {
+                        InboxItemDetailView(item: item)
+                    } label: {
+                        InboxRow(item: item)
+                            .padding(.vertical, 10)
                     }
-                    ForEach(Array(store.inboxItems.filter { !$0.isArchived }.prefix(3).enumerated()), id: \.element.id) { index, item in
-                        if index > 0 { Divider().padding(.vertical, 12) }
-                        NavigationLink {
-                            InboxItemDetailView(item: item)
-                        } label: {
-                            InboxRow(item: item)
-                        }
-                        .buttonStyle(.plain)
-                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -175,19 +147,17 @@ struct HomeView: View {
 
     private var flowsPreview: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader("Your Flows", actionTitle: "View flows") {
-                showingFlows = true
+            SectionHeader("Flows", actionTitle: "Open Flows") {
+                selection = .flows
             }
-            FlowMindCard(padding: 16) {
-                VStack(alignment: .leading, spacing: 0) {
-                    if store.flows.isEmpty {
-                        EmptyStateView(icon: "bolt", title: "No Flows yet.", detail: "Create your first Flow from something you do repeatedly.")
-                            .padding(.vertical, 16)
-                    }
-                    ForEach(Array(store.flows.prefix(3).enumerated()), id: \.element.id) { index, flow in
-                        if index > 0 { Divider().padding(.vertical, 12) }
-                        FlowSummaryRow(flow: flow)
-                    }
+            VStack(alignment: .leading, spacing: 0) {
+                if store.flows.isEmpty {
+                    HomeEmptyRow(icon: "bolt", title: "No Flows yet.", detail: "Create one when a task starts to repeat.")
+                }
+                ForEach(Array(store.flows.prefix(3).enumerated()), id: \.element.id) { index, flow in
+                    if index > 0 { Divider() }
+                    FlowSummaryRow(flow: flow)
+                        .padding(.vertical, 10)
                 }
             }
         }
@@ -196,15 +166,14 @@ struct HomeView: View {
     private var activityPreview: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader("Recent Activity")
-            FlowMindCard(padding: 16) {
-                VStack(alignment: .leading, spacing: 14) {
-                    if store.activity.isEmpty {
-                        EmptyStateView(icon: "clock", title: "No activity yet.", detail: "Your Flow runs will appear here.")
-                            .padding(.vertical, 16)
-                    }
-                    ForEach(store.activity.prefix(3)) { record in
-                        ActivityRow(flowName: record.flowName, action: record.action, timestamp: record.timestamp, status: record.status)
-                    }
+            VStack(alignment: .leading, spacing: 0) {
+                if store.activity.isEmpty {
+                    HomeEmptyRow(icon: "clock.arrow.circlepath", title: "No activity yet.", detail: "Flow runs will appear here.")
+                }
+                ForEach(Array(store.activity.prefix(3).enumerated()), id: \.element.id) { index, record in
+                    if index > 0 { Divider() }
+                    ActivityRow(flowName: record.flowName, action: record.action, timestamp: record.timestamp, status: record.status)
+                        .padding(.vertical, 10)
                 }
             }
         }
@@ -217,6 +186,26 @@ struct HomeView: View {
         case 12..<18: "Good afternoon"
         default: "Good evening"
         }
+    }
+}
+
+private struct HomeEmptyRow: View {
+    let icon: String
+    let title: String
+    let detail: String
+
+    var body: some View {
+        HStack(spacing: 14) {
+            FlowMindIconTile(systemImage: icon, size: 42)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.subheadline.weight(.semibold))
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 8)
+        .accessibilityElement(children: .combine)
     }
 }
 

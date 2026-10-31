@@ -13,7 +13,6 @@ struct OnboardingView: View {
             HStack {
                 Text("FLOWMIND")
                     .font(.system(.headline, design: .rounded).weight(.bold))
-                    .tracking(1.2)
                     .foregroundStyle(Color.flowMindAccent)
                 Spacer()
                 if step != .ready {
@@ -28,7 +27,7 @@ struct OnboardingView: View {
 
             TabView(selection: $step) {
                 ForEach(OnboardingStep.allCases) { step in
-                    OnboardingPageView(step: step, reduceMotion: reduceMotion)
+                    OnboardingPageView(step: step)
                         .tag(step)
                 }
             }
@@ -70,7 +69,7 @@ struct OnboardingView: View {
             complete()
             return
         }
-        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+        withAnimation(reduceMotion ? nil : .spring(response: 0.34, dampingFraction: 0.9)) {
             step = OnboardingStep(rawValue: step.rawValue + 1) ?? .ready
         }
     }
@@ -103,7 +102,6 @@ private enum OnboardingStep: Int, CaseIterable, Identifiable {
 
 private struct OnboardingPageView: View {
     let step: OnboardingStep
-    let reduceMotion: Bool
 
     var body: some View {
         ScrollView {
@@ -141,10 +139,12 @@ private struct OnboardingPageView: View {
     private var visual: some View {
         switch step {
         case .welcome:
-            Image(systemName: "bolt.horizontal.circle.fill")
-                .font(.system(size: 82, weight: .medium))
-                .foregroundStyle(Color.flowMindAccent)
-                .symbolEffect(.pulse, options: .repeating, isActive: !reduceMotion)
+            Image("BrandIcon")
+                .resizable()
+                .interpolation(.high)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 160, height: 160)
+                .clipShape(.rect(cornerRadius: 32))
                 .accessibilityHidden(true)
         case .capture:
             ContentTypeGrid()
@@ -157,7 +157,7 @@ private struct OnboardingPageView: View {
         case .privacy:
             PrivacyPromise()
         case .ready:
-            Image(systemName: "arrow.forward.circle.fill")
+            Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 82, weight: .medium))
                 .foregroundStyle(Color.flowMindAccent)
                 .accessibilityHidden(true)
@@ -212,7 +212,7 @@ private struct ContentTypeGrid: View {
                         .font(.subheadline.weight(.semibold))
                 }
                 .frame(maxWidth: .infinity, minHeight: 92)
-                .flowMindGlassSurface(cornerRadius: 14)
+                .flowMindGlassSurface(cornerRadius: 8)
             }
         }
         .accessibilityElement(children: .combine)
@@ -230,7 +230,7 @@ private struct LearningSequence: View {
                     .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .flowMindGlassSurface(cornerRadius: 12)
+                    .flowMindGlassSurface(cornerRadius: 8)
                 if step != steps.last {
                     Image(systemName: "arrow.down")
                         .font(.caption.weight(.bold))
@@ -252,7 +252,7 @@ private struct FlowExampleDiagram: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .flowMindGlassSurface(cornerRadius: 16)
+        .flowMindGlassSurface(cornerRadius: 8)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Flow example: When something is shared, if it matches your rule, perform your actions")
     }
@@ -271,11 +271,12 @@ private struct PrivacyPromise: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .flowMindGlassSurface(cornerRadius: 16)
+        .flowMindGlassSurface(cornerRadius: 8)
     }
 }
 
 private struct OnboardingProgressIndicator: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let step: OnboardingStep
 
     var body: some View {
@@ -284,7 +285,7 @@ private struct OnboardingProgressIndicator: View {
                 Capsule()
                     .fill(item == step ? Color.flowMindAccent : Color.flowMindTertiaryText.opacity(0.35))
                     .frame(width: item == step ? 24 : 7, height: 7)
-                    .animation(.easeInOut(duration: 0.2), value: step)
+                    .animation(reduceMotion ? nil : .spring(response: 0.34, dampingFraction: 0.9), value: step)
             }
         }
         .accessibilityElement(children: .ignore)

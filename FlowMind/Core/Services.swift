@@ -33,6 +33,17 @@ struct FlowDefinition: Codable, Hashable {
     let actions: [String]
 }
 
+extension PatternSuggestion {
+    var flowDefinition: FlowDefinition {
+        FlowDefinition(
+            name: "\(category.label) Capture",
+            trigger: "Something is shared",
+            condition: "It is a \(category.label.lowercased())",
+            actions: actions
+        )
+    }
+}
+
 struct MockFlowGenerationService: FlowGenerationService {
     func generate(from prompt: String) async throws -> FlowDefinition {
         let lowercased = prompt.lowercased()

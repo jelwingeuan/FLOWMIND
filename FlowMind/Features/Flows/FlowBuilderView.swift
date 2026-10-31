@@ -25,7 +25,7 @@ struct FlowBuilderView: View {
                     TextField("Whenever I share a restaurant receipt...", text: $prompt, axis: .vertical)
                         .lineLimit(4...8)
                         .padding(14)
-                        .flowMindGlassSurface(interactive: true, cornerRadius: 15)
+                        .flowMindGlassSurface(interactive: true, cornerRadius: 8)
                         .onSubmit { generate() }
                     Button {
                         generate()
@@ -99,7 +99,7 @@ struct GeneratedFlowPreview: View {
             FlowStepLine(label: "WHEN", value: definition.trigger, icon: "arrow.down")
             FlowStepLine(label: "IF", value: definition.condition, icon: "arrow.down")
             VStack(alignment: .leading, spacing: 10) {
-                Text("DO").font(.caption2.weight(.bold)).tracking(1).foregroundStyle(Color.flowMindAccent)
+                Text("DO").font(.caption2.weight(.bold)).foregroundStyle(Color.flowMindAccent)
                 ForEach(definition.actions, id: \.self) { action in
                     Label(action, systemImage: "checkmark.circle")
                         .font(.subheadline)
@@ -114,6 +114,6 @@ struct GeneratedFlowPreview: View {
             .buttonStyle(SecondaryButtonStyle())
         }
         .padding(18)
-        .flowMindGlassSurface(cornerRadius: 20)
+        .flowMindGlassSurface(cornerRadius: 8)
     }
 }

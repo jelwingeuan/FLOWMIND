@@ -11,11 +11,15 @@ struct FlowsView: View {
                 if store.flows.isEmpty {
                     EmptyStateView(icon: "bolt", title: "No Flows yet.", detail: "Flows are reusable actions you teach FLOWMIND.")
                         .frame(maxWidth: .infinity)
-                        .padding(.top, 80)
-                    Button("Create Your First Flow", systemImage: "plus") {
+                        .padding(.top, 88)
+                        .padding(.bottom, 24)
+                    Button {
                         showingBuilder = true
+                    } label: {
+                        Label("Create Your First Flow", systemImage: "plus")
+                            .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(SecondaryButtonStyle())
+                    .buttonStyle(PrimaryButtonStyle())
                     .frame(maxWidth: .infinity)
                     Button("Learn About Flows") {
                         showingHelp = true
@@ -29,8 +33,7 @@ struct FlowsView: View {
             }
             .padding(20)
         }
-        .safeAreaPadding(.bottom, 96)
-        .background(Color.flowMindBackground)
+        .background(Color.flowMindPrimaryBackground)
         .navigationTitle("Flows")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -116,7 +119,6 @@ struct FlowStepLine: View {
         VStack(alignment: .leading, spacing: 5) {
             Text(label)
                 .font(.caption2.weight(.bold))
-                .tracking(1)
                 .foregroundStyle(Color.flowMindAccent)
             HStack {
                 Text(value).font(.subheadline.weight(.medium))

@@ -95,7 +95,7 @@ struct InboxItemDetailView: View {
 
     private var preview: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 8)
                 .fill(Color.flowMindAccent.opacity(0.11))
             VStack(spacing: 12) {
                 Image(systemName: previewIcon)

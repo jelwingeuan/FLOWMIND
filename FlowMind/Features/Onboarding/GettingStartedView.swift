@@ -36,7 +36,6 @@ struct FirstItemGuidanceCard: View {
             VStack(alignment: .leading, spacing: 14) {
                 Label("YOUR FIRST ITEM IS READY", systemImage: "sparkles")
                     .font(.caption.weight(.bold))
-                    .tracking(0.8)
                     .foregroundStyle(Color.flowMindAccent)
                 FirstUseStep(number: 1, title: "Review", detail: "Check what FLOWMIND found.")
                 FirstUseStep(number: 2, title: "Choose actions", detail: "Decide what should happen next.")
