@@ -207,6 +207,17 @@ final class FlowMindTests: XCTestCase {
         XCTAssertEqual(reopened.attachmentData(for: file.id), content)
     }
 
+    func testTemporaryAttachmentPreviewUsesSafeFilenameAndRemovesCopy() throws {
+        let content = Data("Saved file".utf8)
+        let preview = try TemporaryAttachmentPreview(data: content, filename: "../../notes.txt")
+        defer { try? preview.remove() }
+
+        XCTAssertEqual(preview.url.lastPathComponent, "notes.txt")
+        XCTAssertEqual(try Data(contentsOf: preview.url), content)
+        try preview.remove()
+        XCTAssertFalse(FileManager.default.fileExists(atPath: preview.url.path))
+    }
+
     @MainActor
     func testOnboardingReplayPreservesEducationProgress() {
         let suiteName = "FlowMindTests.Education.\(UUID().uuidString)"

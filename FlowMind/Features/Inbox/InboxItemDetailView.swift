@@ -1,4 +1,5 @@
 import PDFKit
+import QuickLook
 import SwiftUI
 
 struct InboxItemDetailView: View {
@@ -15,6 +16,10 @@ struct InboxItemDetailView: View {
     @State private var previewFailure: String?
     @State private var isLoadingPreview = false
     @State private var showingPDF = false
+    @State private var requestedFilePreview: UUID?
+    @State private var isPreparingFile = false
+    @State private var temporaryPreview: TemporaryAttachmentPreview?
+    @State private var quickLookURL: URL?
 
     var body: some View {
         ScrollView {
@@ -138,6 +143,16 @@ struct InboxItemDetailView: View {
             }
         }
         .task(id: item.id) { await loadPreview() }
+        .task(id: requestedFilePreview) {
+            guard requestedFilePreview != nil else { return }
+            await prepareOtherFilePreview()
+        }
+        .quickLookPreview($quickLookURL)
+        .onChange(of: quickLookURL) { oldURL, newURL in
+            guard oldURL != nil, newURL == nil, let temporaryPreview else { return }
+            self.temporaryPreview = nil
+            Task.detached(priority: .utility) { try? temporaryPreview.remove() }
+        }
     }
 
     @ViewBuilder
@@ -176,7 +191,20 @@ struct InboxItemDetailView: View {
                             }
                             .buttonStyle(SecondaryButtonStyle())
                         }
-                        if previewFailure != nil {
+                        if item.contentType == .unknown {
+                            Button {
+                                requestedFilePreview = UUID()
+                            } label: {
+                                if isPreparingFile {
+                                    ProgressView("Preparing file...")
+                                } else {
+                                    Label("Open File", systemImage: "doc.text.magnifyingglass")
+                                }
+                            }
+                            .buttonStyle(SecondaryButtonStyle())
+                            .disabled(isPreparingFile)
+                        }
+                        if previewFailure != nil && item.contentType != .unknown {
                             Button("Try Again") { Task { await loadPreview() } }
                                 .buttonStyle(SecondaryTextButtonStyle())
                         }
@@ -228,6 +256,32 @@ struct InboxItemDetailView: View {
             pdfDocument = PDFDocument(data: data)
             pdfThumbnail = pdfDocument?.page(at: 0)?.thumbnail(of: CGSize(width: 600, height: 800), for: .mediaBox)
             if pdfThumbnail == nil { previewFailure = pdfDocument == nil ? "This PDF could not be opened." : "Preview unavailable." }
+        }
+    }
+
+    @MainActor
+    private func prepareOtherFilePreview() async {
+        guard !isPreparingFile else { return }
+        isPreparingFile = true
+        previewFailure = nil
+        defer { isPreparingFile = false }
+        guard let data = store.attachmentData(for: item.id) else {
+            previewFailure = store.errorMessage ?? "The original file could not be loaded."
+            return
+        }
+        let filename = item.sourceFilename ?? item.title
+        do {
+            let preview = try await Task.detached(priority: .userInitiated) {
+                try TemporaryAttachmentPreview(data: data, filename: filename)
+            }.value
+            guard !Task.isCancelled else {
+                try? preview.remove()
+                return
+            }
+            temporaryPreview = preview
+            quickLookURL = preview.url
+        } catch {
+            previewFailure = "This file could not be opened. Please try again."
         }
     }
 

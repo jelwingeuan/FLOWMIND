@@ -8,7 +8,7 @@ FLOWMIND is a privacy-first, local-first iPhone app for turning intentionally sh
 - Four-page onboarding focused on explicit sharing and user control
 - SwiftData models for inbox items, Flows, and Flow runs
 - Empty-by-default local storage, with notes saved only from user-entered text
-- Inbox item detail with on-demand photo and PDF previews, original links, extracted fields, and suggested actions
+- Inbox item detail with on-demand photo and PDF previews, Quick Look for other files, original links, extracted fields, and suggested actions
 - Visual Flow cards, a natural-language Flow builder backed by `MockFlowGenerationService`, and local Flow execution
 - Transparent threshold-based pattern suggestions in Mind
 - Privacy-focused Settings with local data deletion
@@ -42,4 +42,4 @@ The next product phases can add a Share Extension with an App Group, App Intents
 
 ## Known limitations
 
-The current app uses mock analysis and an on-demand mock Flow generator. These services do not populate the app at launch. The Share Extension, App Intents, previews for non-PDF files, remote AI, calendar/reminder integrations, and cloud sync are architectural next steps rather than completed functionality.
+The current app uses mock analysis and an on-demand mock Flow generator. These services do not populate the app at launch. Quick Look may not render every imported file format. The Share Extension, App Intents, remote AI, calendar/reminder integrations, and cloud sync are architectural next steps rather than completed functionality.

@@ -289,3 +289,29 @@ final class FlowMindStore {
         return true
     }
 }
+
+struct TemporaryAttachmentPreview: Sendable {
+    let url: URL
+    private let directory: URL
+
+    init(data: Data, filename: String) throws {
+        let name = URL(fileURLWithPath: filename).lastPathComponent
+        let safeName = name.isEmpty || name == "." || name == ".." ? "Attachment" : name
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("FlowMindPreview-\(UUID().uuidString)", isDirectory: true)
+        let url = directory.appendingPathComponent(safeName)
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+            try data.write(to: url, options: .atomic)
+        } catch {
+            try? FileManager.default.removeItem(at: directory)
+            throw error
+        }
+        self.url = url
+        self.directory = directory
+    }
+
+    func remove() throws {
+        try FileManager.default.removeItem(at: directory)
+    }
+}
