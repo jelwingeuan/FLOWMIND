@@ -121,13 +121,7 @@ final class FlowMindStore {
 
     @discardableResult
     func createFlow(from item: InboxItem) -> FlowSummary? {
-        let flow = FlowSummary(id: UUID(), name: item.detectedCategory == .receipt ? "Receipt Capture" : "\(item.detectedCategory.label) Capture", icon: "bolt.fill", trigger: "Something is shared", condition: "It is a \(item.detectedCategory.label.lowercased())", actionSummary: item.suggestedActions.prefix(2).joined(separator: " -> "), isEnabled: true, runCount: 0, successfulRunCount: 0, lastRunAt: nil, creationSource: "suggested")
-        modelContext.insert(FlowRecord(flow: flow))
-        guard persist() else { return nil }
-        flows.append(flow)
-        flows.sort { $0.name < $1.name }
-        refreshPatterns()
-        return flow
+        createFlow(from: item.suggestedFlowDefinition, source: "suggested")
     }
 
     func setFlowEnabled(flow: FlowSummary, isEnabled: Bool) -> Bool {

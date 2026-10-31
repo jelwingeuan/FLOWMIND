@@ -260,6 +260,27 @@ final class FlowMindTests: XCTestCase {
     }
 
     @MainActor
+    func testInboxFlowReviewMatchesSavedSuggestedFlow() throws {
+        let container = try makeContainer()
+        let store = FlowMindStore(modelContext: container.mainContext)
+        XCTAssertTrue(store.addTextItem(title: "Review note", text: "A note to organize"))
+        let item = try XCTUnwrap(store.inboxItems.first)
+        let definition = item.suggestedFlowDefinition
+
+        XCTAssertEqual(definition.actions, Array(item.suggestedActions.prefix(2)))
+        XCTAssertTrue(store.flows.isEmpty)
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<FlowRecord>()), 0)
+
+        let flow = try XCTUnwrap(store.createFlow(from: item))
+        XCTAssertEqual(flow.name, definition.name)
+        XCTAssertEqual(flow.trigger, definition.trigger)
+        XCTAssertEqual(flow.condition, definition.condition)
+        XCTAssertEqual(flow.actionSummary, definition.actions.joined(separator: " -> "))
+        XCTAssertEqual(flow.creationSource, "suggested")
+        XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<FlowRecord>()), 1)
+    }
+
+    @MainActor
     func testDisabledFlowCannotRunAndEnabledStateSurvivesRelaunch() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

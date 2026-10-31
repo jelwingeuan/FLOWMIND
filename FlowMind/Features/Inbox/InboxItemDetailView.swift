@@ -9,6 +9,10 @@ struct InboxItemDetailView: View {
     let item: InboxItem
     @State private var firstCreatedFlow: FlowSummary?
     @State private var showingCreatedFlow = false
+    @State private var showingFlowReview = false
+    @State private var showingFlowSaveError = false
+    @State private var createdFlowFromReview: FlowSummary?
+    @State private var createdFirstFlowFromReview = false
     @State private var showingArchiveError = false
     @State private var previewImage: UIImage?
     @State private var pdfDocument: PDFDocument?
@@ -82,16 +86,9 @@ struct InboxItemDetailView: View {
                     }
                 }
                 Button {
-                    let isFirstFlow = store.flows.isEmpty && !education.hasCreatedFirstFlow
-                    guard let flow = store.createFlow(from: item) else { return }
-                    if isFirstFlow {
-                        education.markFirstFlowCreated()
-                        firstCreatedFlow = flow
-                    } else {
-                        showingCreatedFlow = true
-                    }
+                    showingFlowReview = true
                 } label: {
-                    Label("Create Flow from these actions", systemImage: "bolt.fill")
+                    Label("Review suggested Flow", systemImage: "bolt.fill")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(PrimaryGlassButtonStyle())
@@ -127,6 +124,49 @@ struct InboxItemDetailView: View {
         }
         .sheet(item: $firstCreatedFlow) { flow in
             FirstFlowSuccessSheet(flow: flow) { }
+        }
+        .sheet(isPresented: $showingFlowReview, onDismiss: {
+            guard let flow = createdFlowFromReview else { return }
+            createdFlowFromReview = nil
+            if createdFirstFlowFromReview {
+                firstCreatedFlow = flow
+            } else {
+                showingCreatedFlow = true
+            }
+        }) {
+            NavigationStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Review the suggested steps before saving this Flow.")
+                            .foregroundStyle(.secondary)
+                        GeneratedFlowPreview(definition: item.suggestedFlowDefinition) {
+                            let isFirstFlow = store.flows.isEmpty && !education.hasCreatedFirstFlow
+                            guard let flow = store.createFlow(from: item) else {
+                                showingFlowSaveError = true
+                                return
+                            }
+                            if isFirstFlow { education.markFirstFlowCreated() }
+                            createdFirstFlowFromReview = isFirstFlow
+                            createdFlowFromReview = flow
+                            showingFlowReview = false
+                        }
+                    }
+                    .padding(20)
+                }
+                .background(Color.flowMindBackground)
+                .navigationTitle("Review Flow")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { showingFlowReview = false }
+                    }
+                }
+                .alert("Flow could not be saved", isPresented: $showingFlowSaveError) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text(store.errorMessage ?? "Please try again.")
+                }
+            }
         }
         .sheet(isPresented: $showingPDF) {
             if let pdfDocument {

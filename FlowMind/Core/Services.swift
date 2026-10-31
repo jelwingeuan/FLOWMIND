@@ -33,6 +33,17 @@ struct FlowDefinition: Codable, Hashable {
     let actions: [String]
 }
 
+extension InboxItem {
+    var suggestedFlowDefinition: FlowDefinition {
+        FlowDefinition(
+            name: detectedCategory == .receipt ? "Receipt Capture" : "\(detectedCategory.label) Capture",
+            trigger: "Something is shared",
+            condition: "It is a \(detectedCategory.label.lowercased())",
+            actions: Array(suggestedActions.prefix(2))
+        )
+    }
+}
+
 extension PatternSuggestion {
     var flowDefinition: FlowDefinition {
         FlowDefinition(
