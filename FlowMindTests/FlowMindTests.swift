@@ -73,7 +73,7 @@ final class FlowMindTests: XCTestCase {
             XCTAssertTrue(store.addTextItem(title: "Restaurant Receipt", text: "My own receipt notes"))
             savedID = store.inboxItems.first?.id
             XCTAssertNotNil(store.createFlow(from: FlowDefinition(name: "Receipt Capture", trigger: "Something is shared", condition: "It is a receipt", actions: ["Save expense"])))
-            store.run(flow: try XCTUnwrap(store.flows.first), with: try XCTUnwrap(store.inboxItems.first))
+            XCTAssertTrue(store.run(flow: try XCTUnwrap(store.flows.first), with: try XCTUnwrap(store.inboxItems.first)))
         }
         let reopenedContainer = try makeContainer(url: url)
         let reopened = FlowMindStore(modelContext: reopenedContainer.mainContext)
@@ -92,7 +92,7 @@ final class FlowMindTests: XCTestCase {
         let store = FlowMindStore(modelContext: container.mainContext)
         store.addTextItem(title: "My note", text: "A task to organize")
         store.createFlow(from: try XCTUnwrap(store.inboxItems.first))
-        store.run(flow: try XCTUnwrap(store.flows.first), with: try XCTUnwrap(store.inboxItems.first))
+        XCTAssertTrue(store.run(flow: try XCTUnwrap(store.flows.first), with: try XCTUnwrap(store.inboxItems.first)))
         XCTAssertTrue(store.deleteAllData())
         let relaunched = FlowMindStore(modelContext: container.mainContext)
         XCTAssertTrue(relaunched.inboxItems.isEmpty)
@@ -114,7 +114,7 @@ final class FlowMindTests: XCTestCase {
             XCTAssertTrue(store.addTextItem(title: "My note", text: "A task to organize"))
             let item = try XCTUnwrap(store.inboxItems.first)
             let flow = try XCTUnwrap(store.createFlow(from: item))
-            store.run(flow: flow, with: item)
+            XCTAssertTrue(store.run(flow: flow, with: item))
             XCTAssertEqual(store.activity.count, 1)
             XCTAssertTrue(store.deleteAllData())
             XCTAssertTrue(store.inboxItems.isEmpty)
@@ -225,6 +225,44 @@ final class FlowMindTests: XCTestCase {
         XCTAssertNil(flow.lastRunAt)
         XCTAssertTrue(store.inboxItems.isEmpty)
         XCTAssertTrue(store.activity.isEmpty)
+    }
+
+    @MainActor
+    func testDisabledFlowCannotRunAndEnabledStateSurvivesRelaunch() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("test.store")
+
+        do {
+            let container = try makeContainer(url: url)
+            let store = FlowMindStore(modelContext: container.mainContext)
+            XCTAssertTrue(store.addTextItem(title: "My note", text: "Record an expense"))
+            let flow = try XCTUnwrap(store.createFlow(from: FlowDefinition(
+                name: "Expense Flow", trigger: "A note is shared", condition: "It contains an expense", actions: ["Save expense"]
+            )))
+            XCTAssertTrue(store.setFlowEnabled(flow: flow, isEnabled: false))
+            XCTAssertEqual(store.flows.first?.isEnabled, false)
+            XCTAssertFalse(store.run(flow: flow, with: try XCTUnwrap(store.inboxItems.first)))
+            XCTAssertTrue(store.activity.isEmpty)
+            XCTAssertEqual(store.flows.first?.runCount, 0)
+        }
+
+        do {
+            let container = try makeContainer(url: url)
+            let store = FlowMindStore(modelContext: container.mainContext)
+            let flow = try XCTUnwrap(store.flows.first)
+            XCTAssertFalse(flow.isEnabled)
+            XCTAssertTrue(store.setFlowEnabled(flow: flow, isEnabled: true))
+            XCTAssertTrue(store.run(flow: flow, with: try XCTUnwrap(store.inboxItems.first)))
+            XCTAssertEqual(store.activity.first?.action, "Save expense")
+        }
+
+        let reopenedContainer = try makeContainer(url: url)
+        let reopened = FlowMindStore(modelContext: reopenedContainer.mainContext)
+        XCTAssertEqual(reopened.flows.first?.isEnabled, true)
+        XCTAssertEqual(reopened.flows.first?.runCount, 1)
+        XCTAssertEqual(reopened.activity.first?.action, "Save expense")
     }
 
     @MainActor

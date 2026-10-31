@@ -66,6 +66,22 @@ struct FlowCard: View {
     @Environment(FlowMindStore.self) private var store
     let flow: FlowSummary
     @State private var showingRunSheet = false
+    @State private var showingUpdateError = false
+
+    private var isEnabled: Bool {
+        store.flows.first(where: { $0.id == flow.id })?.isEnabled ?? flow.isEnabled
+    }
+
+    private var enabledBinding: Binding<Bool> {
+        Binding(
+            get: { isEnabled },
+            set: { enabled in
+                if !store.setFlowEnabled(flow: flow, isEnabled: enabled) {
+                    showingUpdateError = true
+                }
+            }
+        )
+    }
 
     var body: some View {
         FlowMindCard {
@@ -85,7 +101,11 @@ struct FlowCard: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    StatusBadge(title: flow.isEnabled ? "On" : "Off", color: flow.isEnabled ? .flowMindSuccess : .secondary)
+                    Toggle(isEnabled ? "On" : "Off", isOn: enabledBinding)
+                        .toggleStyle(.switch)
+                        .font(.caption.weight(.semibold))
+                        .fixedSize()
+                        .accessibilityLabel("\(flow.name) enabled")
                 }
                 FlowStepLine(label: "WHEN", value: flow.trigger, icon: "arrow.down")
                 FlowStepLine(label: "IF", value: flow.condition, icon: "arrow.down")
@@ -101,11 +121,17 @@ struct FlowCard: View {
                         Label("Run", systemImage: "play.fill")
                     }
                     .buttonStyle(SecondaryButtonStyle())
+                    .disabled(!isEnabled)
                 }
             }
         }
         .sheet(isPresented: $showingRunSheet) {
             RunFlowSheet(flow: flow)
+        }
+        .alert("Flow could not be updated", isPresented: $showingUpdateError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(store.errorMessage ?? "Please try again.")
         }
     }
 }
@@ -139,6 +165,11 @@ struct RunFlowSheet: View {
     @Environment(\.dismiss) private var dismiss
     let flow: FlowSummary
     @State private var selectedItemID: UUID?
+    @State private var showingRunError = false
+
+    private var isEnabled: Bool {
+        store.flows.first(where: { $0.id == flow.id })?.isEnabled == true
+    }
 
     var body: some View {
         NavigationStack {
@@ -159,16 +190,29 @@ struct RunFlowSheet: View {
                 Section {
                     Button {
                         guard let selectedItemID, let item = store.inboxItems.first(where: { $0.id == selectedItemID }) else { return }
-                        store.run(flow: flow, with: item)
-                        dismiss()
+                        if store.run(flow: flow, with: item) {
+                            dismiss()
+                        } else {
+                            showingRunError = true
+                        }
                     } label: {
                         Label("Run Flow", systemImage: "play.fill")
                     }
-                    .disabled(selectedItemID == nil)
+                    .disabled(selectedItemID == nil || !isEnabled)
                 }
             }
             .navigationTitle("Run \(flow.name)")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+            .alert("Flow could not be run", isPresented: $showingRunError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(store.errorMessage ?? "Please try again.")
+            }
         }
     }
 }

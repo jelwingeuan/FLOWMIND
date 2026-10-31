@@ -130,41 +130,54 @@ final class FlowMindStore {
         return flow
     }
 
-    func run(flow: FlowSummary, with item: InboxItem) {
+    func setFlowEnabled(flow: FlowSummary, isEnabled: Bool) -> Bool {
         let flowID = flow.id
         let descriptor = FetchDescriptor<FlowRecord>(predicate: #Predicate { $0.id == flowID })
-        guard let record = try? modelContext.fetch(descriptor).first else { return }
+        guard let record = try? modelContext.fetch(descriptor).first else {
+            errorMessage = "FLOWMIND could not access this Flow."
+            return false
+        }
+        guard record.isEnabled != isEnabled else { return true }
+        record.isEnabled = isEnabled
+        record.updatedAt = Date()
+        guard persist() else { return false }
+        if let index = flows.firstIndex(where: { $0.id == flowID }) {
+            flows[index] = record.domainValue
+        }
+        return true
+    }
+
+    func run(flow: FlowSummary, with item: InboxItem) -> Bool {
+        let flowID = flow.id
+        let descriptor = FetchDescriptor<FlowRecord>(predicate: #Predicate { $0.id == flowID })
+        guard let record = try? modelContext.fetch(descriptor).first else {
+            errorMessage = "FLOWMIND could not access this Flow."
+            return false
+        }
+        guard record.isEnabled else {
+            errorMessage = "Turn on this Flow before running it."
+            return false
+        }
         record.runCount += 1
         record.successfulRunCount += 1
         let completedAt = Date()
         record.lastRunAt = completedAt
         record.updatedAt = Date()
-        let runRecord = FlowRunRecord(flowID: flow.id, inputItemID: item.id, actions: item.suggestedActions)
+        let runRecord = FlowRunRecord(flowID: flow.id, inputItemID: item.id, actions: [record.actionSummary])
         modelContext.insert(runRecord)
-        guard persist() else { return }
+        guard persist() else { return false }
 
         if let index = flows.firstIndex(where: { $0.id == flow.id }) {
-            flows[index] = FlowSummary(
-                id: flow.id,
-                name: flow.name,
-                icon: flow.icon,
-                trigger: flow.trigger,
-                condition: flow.condition,
-                actionSummary: flow.actionSummary,
-                isEnabled: flow.isEnabled,
-                runCount: record.runCount,
-                successfulRunCount: record.successfulRunCount,
-                lastRunAt: record.lastRunAt,
-                creationSource: flow.creationSource
-            )
+            flows[index] = record.domainValue
         }
         activity.insert(
-            ActivityRecord(id: runRecord.id, flowName: flow.name, action: runRecord.executedActions, timestamp: completedAt, status: runRecord.status.capitalized),
+            ActivityRecord(id: runRecord.id, flowName: record.name, action: runRecord.executedActions, timestamp: completedAt, status: runRecord.status.capitalized),
             at: 0
         )
         if activity.count > 50 {
             activity.removeLast(activity.count - 50)
         }
+        return true
     }
 
     func archive(item: InboxItem) -> Bool {
