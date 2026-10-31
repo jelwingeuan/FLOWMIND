@@ -93,12 +93,39 @@ final class FlowMindTests: XCTestCase {
         store.addTextItem(title: "My note", text: "A task to organize")
         store.createFlow(from: try XCTUnwrap(store.inboxItems.first))
         store.run(flow: try XCTUnwrap(store.flows.first), with: try XCTUnwrap(store.inboxItems.first))
-        store.deleteAllData()
+        XCTAssertTrue(store.deleteAllData())
         let relaunched = FlowMindStore(modelContext: container.mainContext)
         XCTAssertTrue(relaunched.inboxItems.isEmpty)
         XCTAssertTrue(relaunched.flows.isEmpty)
         XCTAssertTrue(relaunched.activity.isEmpty)
         XCTAssertTrue(relaunched.patternSuggestions.isEmpty)
+    }
+
+    @MainActor
+    func testDeleteAllDataPersistsAcrossRelaunch() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("test.store")
+
+        do {
+            let container = try makeContainer(url: url)
+            let store = FlowMindStore(modelContext: container.mainContext)
+            XCTAssertTrue(store.addTextItem(title: "My note", text: "A task to organize"))
+            let item = try XCTUnwrap(store.inboxItems.first)
+            let flow = try XCTUnwrap(store.createFlow(from: item))
+            store.run(flow: flow, with: item)
+            XCTAssertEqual(store.activity.count, 1)
+            XCTAssertTrue(store.deleteAllData())
+            XCTAssertTrue(store.inboxItems.isEmpty)
+            XCTAssertTrue(store.flows.isEmpty)
+            XCTAssertTrue(store.activity.isEmpty)
+        }
+
+        let reopenedContainer = try makeContainer(url: url)
+        XCTAssertEqual(try reopenedContainer.mainContext.fetchCount(FetchDescriptor<InboxItemRecord>()), 0)
+        XCTAssertEqual(try reopenedContainer.mainContext.fetchCount(FetchDescriptor<FlowRecord>()), 0)
+        XCTAssertEqual(try reopenedContainer.mainContext.fetchCount(FetchDescriptor<FlowRunRecord>()), 0)
     }
 
     @MainActor

@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("appAppearance") private var appAppearanceRawValue = AppAppearance.system.rawValue
     @State private var showingDeleteConfirmation = false
+    @State private var showingDeleteError = false
 
     var body: some View {
         Form {
@@ -58,11 +59,18 @@ struct SettingsView: View {
         }
         .confirmationDialog("Delete all local data?", isPresented: $showingDeleteConfirmation) {
             Button("Delete Everything", role: .destructive) {
-                store.deleteAllData()
+                if !store.deleteAllData() {
+                    showingDeleteError = true
+                }
             }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("This action cannot be undone.")
+        }
+        .alert("Local data could not be deleted", isPresented: $showingDeleteError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(store.errorMessage ?? "Please try again.")
         }
     }
 }

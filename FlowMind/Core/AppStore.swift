@@ -182,7 +182,7 @@ final class FlowMindStore {
         return true
     }
 
-    func deleteAllData() {
+    func deleteAllData() -> Bool {
         do {
             for record in try modelContext.fetch(FetchDescriptor<InboxItemRecord>()) {
                 modelContext.delete(record)
@@ -198,8 +198,11 @@ final class FlowMindStore {
             flows = []
             activity = []
             patternSuggestions = []
+            return true
         } catch {
+            modelContext.rollback()
             errorMessage = "Local data could not be deleted."
+            return false
         }
     }
 
