@@ -95,6 +95,7 @@ struct AddInboxItemSheet: View {
     @State private var selectedFileData: Data?
     @State private var selectedFileName: String?
     @State private var isLoadingFile = false
+    @State private var activeFileImportID: UUID?
     @State private var showingFileImporter = false
     @State private var showingSaveError = false
     @State private var showingFirstItemReady = false
@@ -181,11 +182,12 @@ struct AddInboxItemSheet: View {
                 importFile(result)
             }
             .onChange(of: selectedPhoto) { _, item in
-                guard let item else {
-                    photoData = nil
-                    return
-                }
-                Task { await loadPhoto(item) }
+                photoData = nil
+                isLoadingPhoto = item != nil
+            }
+            .task(id: selectedPhoto) {
+                guard let selectedPhoto else { return }
+                await loadPhoto(selectedPhoto)
             }
             .alert("Item could not be saved", isPresented: $showingSaveError) {
                 Button("OK", role: .cancel) { }
@@ -237,8 +239,12 @@ struct AddInboxItemSheet: View {
 
     private func loadPhoto(_ item: PhotosPickerItem) async {
         isLoadingPhoto = true
-        defer { isLoadingPhoto = false }
-        guard let data = try? await item.loadTransferable(type: Data.self), !data.isEmpty else {
+        defer {
+            if selectedPhoto == item { isLoadingPhoto = false }
+        }
+        let data = try? await item.loadTransferable(type: Data.self)
+        guard !Task.isCancelled, selectedPhoto == item else { return }
+        guard let data, !data.isEmpty else {
             store.errorMessage = "FLOWMIND could not read that photo."
             showingSaveError = true
             return
@@ -248,6 +254,8 @@ struct AddInboxItemSheet: View {
 
     private func importFile(_ result: Result<URL, Error>) {
         guard case let .success(url) = result else { return }
+        let importID = UUID()
+        activeFileImportID = importID
         selectedFileData = nil
         selectedFileName = nil
         let accessed = url.startAccessingSecurityScopedResource()
@@ -256,11 +264,9 @@ struct AddInboxItemSheet: View {
             let data = await Task.detached(priority: .userInitiated) {
                 try? Data(contentsOf: url, options: [.mappedIfSafe])
             }.value
-            defer {
-                if accessed { url.stopAccessingSecurityScopedResource() }
-                isLoadingFile = false
-            }
-            guard !Task.isCancelled else { return }
+            if accessed { url.stopAccessingSecurityScopedResource() }
+            guard activeFileImportID == importID else { return }
+            isLoadingFile = false
             guard let data, !data.isEmpty else {
                 store.errorMessage = "FLOWMIND could not read that file."
                 showingSaveError = true
