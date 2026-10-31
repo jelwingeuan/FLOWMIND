@@ -1,3 +1,4 @@
+import PDFKit
 import SwiftUI
 
 struct InboxItemDetailView: View {
@@ -8,6 +9,12 @@ struct InboxItemDetailView: View {
     @State private var firstCreatedFlow: FlowSummary?
     @State private var showingCreatedFlow = false
     @State private var showingArchiveError = false
+    @State private var previewImage: UIImage?
+    @State private var pdfDocument: PDFDocument?
+    @State private var pdfThumbnail: UIImage?
+    @State private var previewFailure: String?
+    @State private var isLoadingPreview = false
+    @State private var showingPDF = false
 
     var body: some View {
         ScrollView {
@@ -28,8 +35,22 @@ struct InboxItemDetailView: View {
                 }
                 FlowMindCard {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Summary").font(.headline)
-                        Text(item.summary).foregroundStyle(.secondary)
+                        Text(item.contentType == .text ? "Note" : "Summary").font(.headline)
+                        Text(item.contentType == .text ? (item.plainTextContent ?? item.summary) : item.summary)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                if let originalURL {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(originalURL.absoluteString)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                        Link(destination: originalURL) {
+                            Label("Open Original Link", systemImage: "arrow.up.right.square")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(SecondaryButtonStyle())
                     }
                 }
                 if !item.extractedFields.isEmpty {
@@ -102,24 +123,112 @@ struct InboxItemDetailView: View {
         .sheet(item: $firstCreatedFlow) { flow in
             FirstFlowSuccessSheet(flow: flow) { }
         }
+        .sheet(isPresented: $showingPDF) {
+            if let pdfDocument {
+                NavigationStack {
+                    PDFDocumentView(document: pdfDocument)
+                        .navigationTitle(item.sourceFilename ?? "PDF")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("Done") { showingPDF = false }
+                            }
+                        }
+                }
+            }
+        }
+        .task(id: item.id) { await loadPreview() }
     }
 
+    @ViewBuilder
     private var preview: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.flowMindAccent.opacity(0.11))
+        if let previewImage {
+            attachmentImage(previewImage)
+                .accessibilityLabel("Saved photo: \(item.title)")
+        } else if let pdfThumbnail {
             VStack(spacing: 12) {
-                Image(systemName: previewIcon)
-                    .font(.system(size: 40, weight: .medium))
-                    .foregroundStyle(Color.flowMindAccent)
-                    .accessibilityHidden(true)
-                Text(item.contentType.label)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                attachmentImage(pdfThumbnail)
+                    .accessibilityLabel("First page of \(item.title)")
+                Button("Read PDF", systemImage: "doc.text.magnifyingglass") {
+                    showingPDF = true
+                }
+                .buttonStyle(SecondaryButtonStyle())
             }
-            .padding(44)
+        } else {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.flowMindAccent.opacity(0.11))
+                VStack(spacing: 12) {
+                    if isLoadingPreview {
+                        ProgressView("Loading original...")
+                    } else {
+                        Image(systemName: previewIcon)
+                            .font(.system(size: 40, weight: .medium))
+                            .foregroundStyle(Color.flowMindAccent)
+                            .accessibilityHidden(true)
+                        Text(previewFailure ?? item.contentType.label)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                        if pdfDocument != nil {
+                            Button("Read PDF", systemImage: "doc.text.magnifyingglass") {
+                                showingPDF = true
+                            }
+                            .buttonStyle(SecondaryButtonStyle())
+                        }
+                        if previewFailure != nil {
+                            Button("Try Again") { Task { await loadPreview() } }
+                                .buttonStyle(SecondaryTextButtonStyle())
+                        }
+                    }
+                }
+                .padding(44)
+            }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity)
+    }
+
+    private func attachmentImage(_ image: UIImage) -> some View {
+        Image(uiImage: image)
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: .infinity, maxHeight: 360)
+            .background(Color.flowMindSurface)
+            .clipShape(.rect(cornerRadius: 8))
+    }
+
+    private var originalURL: URL? {
+        guard item.contentType == .url,
+              let sourceURL = item.sourceURL,
+              let url = URL(string: sourceURL),
+              let scheme = url.scheme?.lowercased(),
+              ["http", "https"].contains(scheme) else { return nil }
+        return url
+    }
+
+    @MainActor
+    private func loadPreview() async {
+        guard item.contentType == .image || item.contentType == .pdf else { return }
+        previewImage = nil
+        pdfDocument = nil
+        pdfThumbnail = nil
+        previewFailure = nil
+        isLoadingPreview = true
+        defer { isLoadingPreview = false }
+        await Task.yield()
+        guard !Task.isCancelled else { return }
+        guard let data = store.attachmentData(for: item.id) else {
+            previewFailure = store.errorMessage ?? "The original file could not be loaded."
+            return
+        }
+        if item.contentType == .image {
+            previewImage = UIImage(data: data)
+            if previewImage == nil { previewFailure = "This photo could not be displayed." }
+        } else {
+            pdfDocument = PDFDocument(data: data)
+            pdfThumbnail = pdfDocument?.page(at: 0)?.thumbnail(of: CGSize(width: 600, height: 800), for: .mediaBox)
+            if pdfThumbnail == nil { previewFailure = pdfDocument == nil ? "This PDF could not be opened." : "Preview unavailable." }
+        }
     }
 
     private var previewIcon: String {
@@ -128,7 +237,25 @@ struct InboxItemDetailView: View {
         case .pdf: "doc.text"
         case .url: "link"
         case .text: "text.alignleft"
-        case .unknown: "tray"
+        case .unknown: "doc"
+        }
+    }
+}
+
+private struct PDFDocumentView: UIViewRepresentable {
+    let document: PDFDocument
+
+    func makeUIView(context: Context) -> PDFView {
+        let view = PDFView()
+        view.autoScales = true
+        view.displayMode = .singlePageContinuous
+        view.document = document
+        return view
+    }
+
+    func updateUIView(_ view: PDFView, context: Context) {
+        if view.document !== document {
+            view.document = document
         }
     }
 }

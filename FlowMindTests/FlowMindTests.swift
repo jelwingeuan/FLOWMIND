@@ -187,6 +187,27 @@ final class FlowMindTests: XCTestCase {
     }
 
     @MainActor
+    func testAttachmentLoadsOnDemandAfterRelaunch() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("test.store")
+        let content = Data([0x25, 0x50, 0x44, 0x46, 0x2D])
+
+        do {
+            let container = try makeContainer(url: url)
+            let store = FlowMindStore(modelContext: container.mainContext)
+            XCTAssertTrue(store.addAttachmentItem(data: content, filename: "notes.pdf", contentType: .pdf))
+        }
+
+        let reopenedContainer = try makeContainer(url: url)
+        let reopened = FlowMindStore(modelContext: reopenedContainer.mainContext)
+        let file = try XCTUnwrap(reopened.inboxItems.first)
+        XCTAssertNil(file.attachmentData)
+        XCTAssertEqual(reopened.attachmentData(for: file.id), content)
+    }
+
+    @MainActor
     func testOnboardingReplayPreservesEducationProgress() {
         let suiteName = "FlowMindTests.Education.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

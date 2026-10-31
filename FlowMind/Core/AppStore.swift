@@ -195,6 +195,20 @@ final class FlowMindStore {
         return true
     }
 
+    func attachmentData(for itemID: UUID) -> Data? {
+        let descriptor = FetchDescriptor<InboxItemRecord>(predicate: #Predicate { $0.id == itemID })
+        do {
+            guard let data = try modelContext.fetch(descriptor).first?.attachmentData else {
+                errorMessage = "The original file is no longer available."
+                return nil
+            }
+            return data
+        } catch {
+            errorMessage = "FLOWMIND could not load this file."
+            return nil
+        }
+    }
+
     func deleteAllData() -> Bool {
         do {
             for record in try modelContext.fetch(FetchDescriptor<InboxItemRecord>()) {
